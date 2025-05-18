@@ -1,0 +1,20 @@
+# Compiled output
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# IDE and editor files
+.vscode/
+*.suo
+*.njsproj
+*.sln
+
+# Logs and temp files
+*.log
+tmp/
+temp/
+
+# Optional: Environment files
+.env

@@ -1,0 +1,27 @@
+{
+    "name": "ts-client-gen",
+    "version": "1.0.0",
+    "publishConfig": {
+        "access": "public"
+    },
+    "description": "Automatically generate axios client/service layer based on a URL.",
+    "main": "index.js",
+    "scripts": {
+        "build": "rimraf dist && rollup --bundleConfigAsCjs -c",
+        "format": "prettier . --write",
+        "lint": "eslint . --ext .ts,.tsx",
+        "test": "vitest",
+        "test:ui": "vitest --ui",
+        "test:watch": "vitest --watch",
+        "test:unit": "vitest run tests/unit"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/node": "^22.15.18",
+        "prettier": "^3.5.3",
+        "typescript": "^5.8.3",
+        "vitest": "^3.1.3"
+    }
+}
