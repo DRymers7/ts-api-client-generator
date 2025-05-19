@@ -1,10 +1,26 @@
+/**
+ * Module with utilities to help parsing JSON files with
+ * postman requests
+ */
 import {json} from 'stream/consumers';
 import {apiParameters} from '../core/callSuppliedApi';
 
+/**
+ * Extracts the HTTP method from the json request
+ * 
+ * @param jsonRequest JSON value of postman request
+ * @returns string of HTTP method, defaulting to GET
+ */
 const extractHttpMethod = (jsonRequest: any): any => {
     return jsonRequest.method ?? 'GET';
 };
 
+/**
+ * Extracts target URL from json request
+ * 
+ * @param jsonRequest JSON value of postman request
+ * @returns string of target URL, or empty string
+ */
 const extractTargetUrl = (jsonRequest: any): any => {
     const url =
         typeof jsonRequest.url === 'string'
@@ -17,6 +33,12 @@ const extractTargetUrl = (jsonRequest: any): any => {
     return url;
 };
 
+/**
+ * Extracts headers from JSON request
+ * 
+ * @param jsonRequest JSON value of postman request
+ * @returns Record<string, string> of request headers
+ */
 const extractHeadersFromRequest = (
     jsonRequest: any
 ): Record<string, string> => {
@@ -29,6 +51,12 @@ const extractHeadersFromRequest = (
     return headers;
 };
 
+/**
+ * Extracts request body from JSON request
+ * 
+ * @param jsonRequest JSON of postman request
+ * @returns request body of postman request
+ */
 const extractJsonBodyFromRequest = (jsonRequest: any): any => {
     const rawBody = jsonRequest.body?.raw;
     let parsedBody: object | undefined;
@@ -40,6 +68,12 @@ const extractJsonBodyFromRequest = (jsonRequest: any): any => {
     }
 };
 
+/**
+ * Extracts auth header from JSON request
+ * 
+ * @param requestHeaders record of request headers 
+ * @returns string value of auth header used in request
+ */
 const extractAuthHeader = (requestHeaders: Record<string, string>): any => {
     const authHeader: string =
         requestHeaders['Authorization'] ?? requestHeaders['authorization'];

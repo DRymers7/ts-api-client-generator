@@ -1,5 +1,6 @@
 /**
- * General utility functions for parsing .http files.
+ * Module with utilities to help parsing http files with
+ * generic http requests
  */
 
 /**
