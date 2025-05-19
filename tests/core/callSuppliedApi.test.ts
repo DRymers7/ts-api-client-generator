@@ -1,0 +1,53 @@
+import {describe, it, expect} from 'vitest';
+import {
+    apiParameters,
+    apiResponse,
+    callSuppliedApi,
+} from '../../src/core/callSuppliedApi';
+import {HTTP_METHOD} from '../../src/core/types';
+
+const OPEN_URL: string = 'https://restcountries.com/v3.1/all';
+
+/**
+ * Tests for callSuppliedApi. If working correctly, these tests
+ * should:
+ *
+ * 1. Call the countries rest api and verify that the correct response was received
+ * 2. Call an api that does not exist and verify that a correct error was returned
+ */
+describe('callSuppliedApi module tests', () => {
+    it('should successfully call a real downstream API and return a valid response', async () => {
+        const parameters: apiParameters = {
+            targetUrl: OPEN_URL,
+            httpMethod: 'GET',
+            authToken: undefined,
+            requestHeaders: undefined,
+            queryParams: undefined,
+            requestBody: undefined,
+        };
+
+        const result = await callSuppliedApi(parameters);
+
+        expect(result.responseCode).toBe(200);
+        expect(result.responseStatus).toBe('OK');
+        expect(typeof result.responseBody).toBe('object');
+        expect(Array.isArray(result.responseBody)).toBe(true);
+    });
+
+    it('should handle errors gracefully for a bad URL', async () => {
+        const parameters: apiParameters = {
+            targetUrl: 'https://this-api-does-not-exist.com/bad-endpoint',
+            httpMethod: 'GET',
+            authToken: undefined,
+            requestHeaders: undefined,
+            queryParams: undefined,
+            requestBody: undefined,
+        };
+
+        const result = await callSuppliedApi(parameters);
+
+        expect(result.responseCode).toBeGreaterThanOrEqual(400);
+        expect(typeof result.responseBody).toBe('object');
+        expect(result.responseStatus).toBeDefined();
+    });
+});
