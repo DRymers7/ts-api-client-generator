@@ -1,0 +1,10 @@
+POST https://api.example.com/v1/users/create
+Content-Type: application/json
+Authorization: Bearer abcdef123456
+X-Custom-Header: some-value
+
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "role": "admin"
+}
