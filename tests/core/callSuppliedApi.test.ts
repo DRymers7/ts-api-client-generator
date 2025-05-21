@@ -14,6 +14,9 @@ const OPEN_URL: string = 'https://restcountries.com/v3.1/all';
  *
  * 1. Call the countries rest api and verify that the correct response was received
  * 2. Call an api that does not exist and verify that a correct error was returned
+ *
+ * This simply calls an open api and verifies we can get the response. As such,
+ * the timeout for this test is intentionally long.
  */
 describe('callSuppliedApi module tests', () => {
     it('should successfully call a real downstream API and return a valid response', async () => {
@@ -32,7 +35,7 @@ describe('callSuppliedApi module tests', () => {
         expect(result.responseStatus).toBe('OK');
         expect(typeof result.responseBody).toBe('object');
         expect(Array.isArray(result.responseBody)).toBe(true);
-    });
+    }, 10000);
 
     it('should handle errors gracefully for a bad URL', async () => {
         const parameters: apiParameters = {
