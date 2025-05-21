@@ -12,11 +12,12 @@ import fs from 'fs';
 /**
  * Module tests for httpParsingUtils. Follows a progressive pattern
  * to build upon each function call, as it does in the actual code implementation.
- *
- * To extend test coverage, simply point this to different .http files and run each.
  */
 describe('Test suite for http file parsing utility functions', () => {
-    const httpFilePath = path.join(__dirname, 'test_files/test-request.http');
+    const httpFilePath = path.join(
+        __dirname,
+        'test_files/test-request_http.http'
+    );
     const rawContent = fs.readFileSync(httpFilePath, 'utf-8');
     const fileContentArray: string[] = splitAndFilterLines(rawContent);
     const extractedMethodAndUrl: string[] =

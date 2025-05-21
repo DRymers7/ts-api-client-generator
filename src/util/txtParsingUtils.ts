@@ -41,7 +41,7 @@ const extractAuthHeader = (headers: Record<string, string>): string => {
  */
 function extractMethod(tokens: string[]): apiParameters['httpMethod'] {
     const methodIndex = tokens.findIndex(
-        (t) => t === '-X' || t === '--request'
+        (token) => token === '-X' || token === '--request'
     );
     if (methodIndex !== -1 && tokens[methodIndex + 1]) {
         return tokens[
