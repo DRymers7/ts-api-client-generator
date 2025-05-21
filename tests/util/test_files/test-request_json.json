@@ -1,0 +1,23 @@
+{
+    "method": "POST",
+    "header": [
+        {
+            "key": "Content-Type",
+            "value": "application/json"
+        },
+        {
+            "key": "Authorization",
+            "value": "Bearer my-secret-token"
+        }
+    ],
+    "body": {
+        "mode": "raw",
+        "raw": "{\n  \"name\": \"Alice\",\n  \"email\": \"alice@example.com\"\n}"
+    },
+    "url": {
+        "raw": "https://api.example.com/v1/users/create",
+        "protocol": "https",
+        "host": ["api", "example", "com"],
+        "path": ["v1", "users", "create"]
+    }
+}

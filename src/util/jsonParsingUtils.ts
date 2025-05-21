@@ -2,8 +2,6 @@
  * Module with utilities to help parsing JSON files with
  * postman requests
  */
-import {json} from 'stream/consumers';
-import {apiParameters} from '../core/callSuppliedApi';
 
 /**
  * Extracts the HTTP method from the json request
