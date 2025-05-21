@@ -6,3 +6,4 @@ export type HTTP_METHOD =
     | 'PATCH'
     | 'OPTIONS'
     | 'HEAD';
+
