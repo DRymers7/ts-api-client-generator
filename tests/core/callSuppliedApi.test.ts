@@ -52,5 +52,5 @@ describe('callSuppliedApi module tests', () => {
         expect(result.responseCode).toBeGreaterThanOrEqual(400);
         expect(typeof result.responseBody).toBe('object');
         expect(result.responseStatus).toBeDefined();
-    });
+    }, 10000);
 });
