@@ -33,12 +33,14 @@ const generateClientCode = async (
         const fileName = `${componentName}.tsx`;
         const filePath = path.join(__dirname, fileName);
         const project = new Project();
-        const sourceFile = project.createSourceFile(filePath, '', { overwrite: true });
+        const sourceFile = project.createSourceFile(filePath, '', {
+            overwrite: true,
+        });
         addImportStatements(sourceFile);
         addTypeDefinitions(sourceFile, typedResponse, typedRequest);
         addApiCall(sourceFile);
         const serializedRequest = JSON.stringify(requestUsed, null, 2);
-        addReactComponent(sourceFile, componentName, serializedRequest)
+        addReactComponent(sourceFile, componentName, serializedRequest);
         await project.save();
 
         return {
@@ -57,7 +59,7 @@ const generateClientCode = async (
 /**
  * Adds import statements to the top of the source file.
  * (React + TanStack Query + Axios imports)
- * 
+ *
  * @param sourceFile SourceFile object from ts-morph, in the current project.
  */
 const addImportStatements = (sourceFile: SourceFile): void => {
@@ -73,38 +75,37 @@ const addImportStatements = (sourceFile: SourceFile): void => {
         defaultImport: 'axios',
         moduleSpecifier: 'axios',
     });
-}
+};
 
 /**
  * Adds the generated type definitions of the working request and actual API response.
  * (interface apiParameters + typed API response)
- * 
+ *
  * @param sourceFile SourceFile object from ts-morph, in the current project.
  * @param typedResponse generated type response from mapResponseToType
  * @param typedRequest working instance of successful type request
  */
-const addTypeDefinitions = (sourceFile: SourceFile, typedResponse: string, typedRequest: string): void => {
-    sourceFile.addStatements([
-        typedRequest,
-        '',
-        typedResponse,
-        '',
-    ]);
-}
+const addTypeDefinitions = (
+    sourceFile: SourceFile,
+    typedResponse: string,
+    typedRequest: string
+): void => {
+    sourceFile.addStatements([typedRequest, '', typedResponse, '']);
+};
 
 /**
  * Adds the fetchData function to the react component to call the target API
  * with axios and working request instance.
- * 
+ *
  * @param sourceFile SourceFile object from ts-morph, in the current project.
  */
 const addApiCall = (sourceFile: SourceFile): void => {
-        sourceFile.addFunction({
+    sourceFile.addFunction({
         name: 'fetchData',
         isAsync: true,
-        parameters: [{ name: 'params', type: 'apiParameters' }],
+        parameters: [{name: 'params', type: 'apiParameters'}],
         returnType: 'Promise<ApiResponse>',
-        statements: writer => {
+        statements: (writer) => {
             writer.writeLine(`const response = await axios({`);
             writer.writeLine(`  url: params.targetUrl,`);
             writer.writeLine(`  method: params.httpMethod,`);
@@ -115,23 +116,29 @@ const addApiCall = (sourceFile: SourceFile): void => {
             writer.writeLine(`return response.data;`);
         },
     });
-}
+};
 
 /**
  * Add the React component to the current source file.
- * 
+ *
  * @param sourceFile SourceFile object from ts-morph, in the current project.
  * @param componentName component name passed in via configuration args, defaulting to GeneratedApiComponent
  * @param serializedRequest stringified instance of working API request object
  * @returns JSX.Element
  */
-const addReactComponent = (sourceFile: SourceFile, componentName: string, serializedRequest: string): void => {
+const addReactComponent = (
+    sourceFile: SourceFile,
+    componentName: string,
+    serializedRequest: string
+): void => {
     sourceFile.addFunction({
         name: componentName,
         isExported: true,
         returnType: 'JSX.Element',
         statements: (writer: CodeBlockWriter) => {
-            writer.writeLine(`const apiRequest: apiParameters = ${serializedRequest};`);
+            writer.writeLine(
+                `const apiRequest: apiParameters = ${serializedRequest};`
+            );
             writer.blankLine();
             writer.writeLine(`const { data, isLoading, isError } = useQuery({`);
             writer.writeLine(`  queryKey: ['fetchedApi'],`);
@@ -139,14 +146,21 @@ const addReactComponent = (sourceFile: SourceFile, componentName: string, serial
             writer.writeLine(`});`);
             writer.blankLine();
             writer.writeLine(`if (isLoading) return <div>Loading...</div>;`);
-            writer.writeLine(`if (isError) return <div>Error fetching data</div>;`);
+            writer.writeLine(
+                `if (isError) return <div>Error fetching data</div>;`
+            );
             writer.blankLine();
-            writer.writeLine(`return (`).indent(() => {
-                writer.writeLine(`<pre>{JSON.stringify(data, null, 2)}</pre>`);
-            }).writeLine(`);`);
+            writer
+                .writeLine(`return (`)
+                .indent(() => {
+                    writer.writeLine(
+                        `<pre>{JSON.stringify(data, null, 2)}</pre>`
+                    );
+                })
+                .writeLine(`);`);
         },
     });
-}
+};
 
 export {
     FileCreationResult,
@@ -154,5 +168,5 @@ export {
     addImportStatements,
     addTypeDefinitions,
     addApiCall,
-    addReactComponent
-}
+    addReactComponent,
+};

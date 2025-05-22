@@ -35,8 +35,8 @@ const JSON_EXTENSION = '.json';
 /**
  * Parses provided file to create REST request. Supports JSON, TXT (cURL) and .http files.
  *
- * @param file
- * @returns
+ * @param filePath path to the provided file
+ * @returns extracted apiParameters
  */
 const parseProvidedFile = async (filePath: string): Promise<apiParameters> => {
     const content = await fs.readFile(filePath, 'utf-8');
