@@ -11,7 +11,6 @@ interface InterfaceMap {
     [key: string]: string;
 }
 
-
 /**
  * Generates a complete TypeScript interface definition string from an `apiResponse`.
  *
