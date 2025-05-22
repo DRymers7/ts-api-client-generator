@@ -2,6 +2,14 @@ import {HTTP_METHOD} from './types';
 import axios from 'axios';
 
 /**
+ * Wrapped object of working request/response
+ */
+interface callResult {
+    response: apiResponse;
+    requestUsed: apiParameters;
+}
+
+/**
  * Parameters used for REST request to an API
  */
 interface apiParameters {
@@ -26,11 +34,11 @@ interface apiResponse {
  * Calls the provided REST API using Axios and returns a structured response.
  *
  * @param {apiParameters} parameters - Configuration for the API request, including URL, method, headers, query params, and body.
- * @returns {Promise<apiResponse>} - Structured response containing status, code, and optional body.
+ * @returns {Promise<callResult>} - Structured response containing status, code, and optional body.
  */
 const callSuppliedApi = async (
     parameters: apiParameters
-): Promise<apiResponse> => {
+): Promise<callResult> => {
     try {
         const {
             targetUrl,
@@ -57,15 +65,21 @@ const callSuppliedApi = async (
         const result = await axios(config);
 
         return {
-            responseStatus: result.statusText,
-            responseCode: result.status,
-            responseBody: result.data as object,
+            response: {
+                responseStatus: result.statusText,
+                responseCode: result.status,
+                responseBody: result.data as object,
+            },
+            requestUsed: parameters,
         };
     } catch (error: any) {
         return {
-            responseStatus: error.response?.statusText || 'Network Error',
-            responseCode: error.response?.status || 500,
-            responseBody: error.response?.data || {error: error.message},
+            response: {
+                responseStatus: error.response?.statusText || 'Network Error',
+                responseCode: error.response?.status || 500,
+                responseBody: error.response?.data || {error: error.message},
+            },
+            requestUsed: parameters,
         };
     }
 };

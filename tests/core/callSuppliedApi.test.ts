@@ -31,10 +31,10 @@ describe('callSuppliedApi module tests', () => {
 
         const result = await callSuppliedApi(parameters);
 
-        expect(result.responseCode).toBe(200);
-        expect(result.responseStatus).toBe('OK');
-        expect(typeof result.responseBody).toBe('object');
-        expect(Array.isArray(result.responseBody)).toBe(true);
+        expect(result.response.responseCode).toBe(200);
+        expect(result.response.responseStatus).toBe('OK');
+        expect(typeof result.response.responseBody).toBe('object');
+        expect(Array.isArray(result.response.responseBody)).toBe(true);
     }, 10000);
 
     it('should handle errors gracefully for a bad URL', async () => {
@@ -49,8 +49,8 @@ describe('callSuppliedApi module tests', () => {
 
         const result = await callSuppliedApi(parameters);
 
-        expect(result.responseCode).toBeGreaterThanOrEqual(400);
-        expect(typeof result.responseBody).toBe('object');
-        expect(result.responseStatus).toBeDefined();
+        expect(result.response.responseCode).toBeGreaterThanOrEqual(400);
+        expect(typeof result.response.responseBody).toBe('object');
+        expect(result.response.responseStatus).toBeDefined();
     }, 10000);
 });
