@@ -13,14 +13,22 @@
         "test": "vitest",
         "test:ui": "vitest --ui",
         "test:watch": "vitest --watch",
+        "test:debug": "vitest --run --inspect",
         "test:unit": "vitest run tests/unit"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "@types/axios": "^0.9.36",
         "@types/node": "^22.15.18",
+        "@types/shell-quote": "^1.7.5",
+        "axios": "^1.9.0",
+        "fetch": "^1.1.0",
         "prettier": "^3.5.3",
+        "react-query": "^3.39.3",
+        "shell-quote": "^1.8.2",
+        "ts-morph": "^25.0.1",
         "typescript": "^5.8.3",
         "vitest": "^3.1.3"
     }

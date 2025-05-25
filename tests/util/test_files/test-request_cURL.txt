@@ -1,0 +1,9 @@
+curl --location --request POST 'https://api.example.com/v1/users/create' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer my-secret-token' \
+--header 'X-Custom-Header: custom-value' \
+--data-raw '{
+    "name": "Alice Smith",
+    "email": "alice@example.com",
+    "roles": ["admin", "editor"]
+}'
