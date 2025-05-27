@@ -84,4 +84,4 @@ const callSuppliedApi = async (
     }
 };
 
-export {callSuppliedApi, apiParameters, apiResponse};
+export {callSuppliedApi, apiParameters, apiResponse, callResult};
