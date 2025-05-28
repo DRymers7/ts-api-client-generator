@@ -1,3 +1,4 @@
+import {ApiCallError} from './errors';
 import {HTTP_METHOD} from './types';
 import axios from 'axios';
 
@@ -32,9 +33,11 @@ interface apiResponse {
 
 /**
  * Calls the provided REST API using Axios and returns a structured response.
+ * Now throws ApiCallError for any failures to provide consistent error handling.
  *
  * @param {apiParameters} parameters - Configuration for the API request, including URL, method, headers, query params, and body.
  * @returns {Promise<callResult>} - Structured response containing status, code, and optional body.
+ * @throws {ApiCallError} - When the API call fails for any reason (network, HTTP error, etc.)
  */
 const callSuppliedApi = async (
     parameters: apiParameters
@@ -73,14 +76,26 @@ const callSuppliedApi = async (
             requestUsed: parameters,
         };
     } catch (error: any) {
-        return {
-            response: {
-                responseStatus: error.response?.statusText || 'Network Error',
-                responseCode: error.response?.status || 500,
-                responseBody: error.response?.data || {error: error.message},
-            },
-            requestUsed: parameters,
-        };
+        if (error.response) {
+            // The request was made and the server responded with an error status
+            throw new ApiCallError(
+                error.response.status,
+                error.response.statusText || 'HTTP Error'
+            );
+        } else if (error.request) {
+            // Network error - request was made but no response received
+            // This includes DNS failures, timeouts, connection refused, etc.
+            throw new ApiCallError(
+                0, // Use 0 to indicate network-level failure
+                'Network Error: Unable to reach the server'
+            );
+        } else {
+            // Something else went wrong (invalid configuration, etc.)
+            throw new ApiCallError(
+                0,
+                `Request Error: ${error.message}`
+            );
+        }
     }
 };
 

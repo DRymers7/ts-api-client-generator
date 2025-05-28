@@ -27,6 +27,7 @@ import {
     extractJsonBodyFromRequest,
     extractTargetUrl,
 } from '../util/jsonParsingUtils';
+import { FileParseError } from './errors';
 
 const HTTP_EXTENSION = '.http';
 const TXT_EXTENSION = '.txt';
@@ -34,27 +35,39 @@ const JSON_EXTENSION = '.json';
 
 /**
  * Parses provided file to create REST request. Supports JSON, TXT (cURL) and .http files.
+ * This is the main entry point that handles file reading and delegates to appropriate parsers.
  *
  * @param filePath path to the provided file
- * @returns extracted apiParameters
+ * @returns extracted apiParameters for making the API call
+ * @throws {FileParseError} when file cannot be read or parsed
  */
 const parseProvidedFile = async (filePath: string): Promise<apiParameters> => {
-    const content = await fs.readFile(filePath, 'utf-8');
-    const extension = path.extname(filePath).toLowerCase();
-    switch (extension) {
-        case HTTP_EXTENSION:
-            return parseHttpFile(filePath);
-        case TXT_EXTENSION:
-            return parseTxtFile(filePath);
-        case JSON_EXTENSION:
-            return parseJsonFile(filePath);
-        default:
-            throw new Error(`Unsupported file type: ${extension}`);
+    try {
+        // Read file content once, then pass to appropriate parser
+        const content = await fs.readFile(filePath, 'utf-8');
+        const extension = path.extname(filePath).toLowerCase();        
+        switch (extension) {
+            case HTTP_EXTENSION:
+                return parseHttpFile(content);
+            case TXT_EXTENSION:
+                return parseTxtFile(content);
+            case JSON_EXTENSION:
+                return parseJsonFile(content);
+            default:
+                throw new FileParseError(filePath, `Unsupported file type: ${extension}`);
+        }
+    } catch (error: any) {
+        // Propagate error if it is already this type.
+        if (error instanceof FileParseError) {
+            throw error;
+        }        
+        throw new FileParseError(filePath, error.message);
     }
 };
 
 /**
  * Parses a .http file into an apiParameters object.
+ * HTTP files follow the VS Code REST Client format.
  *
  * @param {string} fileContent - Raw text content of the .http file.
  * @returns {apiParameters} - Structured request object suitable for use in callSuppliedApi.
