@@ -14,7 +14,6 @@ interface FileCreationResult {
     success: boolean;
     filePath: string;
     componentName?: string;
-    error?: string;
 }
 
 /**
@@ -52,6 +51,7 @@ const generateClientCode = async (
         return {
             success: true,
             filePath,
+            componentName
         };
     } catch (error: any) {
         throw new ClientCodeGenerationError(

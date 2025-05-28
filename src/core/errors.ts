@@ -1,3 +1,5 @@
+import { ValidationResult } from "../util/validationUtils";
+
 /**
  * Thrown when a provided input file cannot be read or parsed as valid JSON.
  * 
@@ -61,3 +63,21 @@ export class ClientCodeGenerationError extends Error {
     this.name = 'ClientCodeGenerationError';
   }
 }
+
+/**
+ * Thrown when an error occurs while validating the initial arguments.
+ *
+ * @example
+ * throw new ValidationError(validationResults);
+ */
+export class ValidationError extends Error {
+  /**
+   * @param validationResults - array of validation result interfaces containing
+   * more context on what failed. The error message will contain all failing validations.
+   */
+  constructor(validationResults: ValidationResult[]) {
+    super(`Failed to validate arguments/results ${console.log("")}}`);
+    this.name = 'ValidationError';
+  }
+}
+

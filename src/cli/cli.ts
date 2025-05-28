@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 import {Command} from 'commander';
 import path from 'path';
 import fs from 'fs';
@@ -17,6 +16,9 @@ import {
 
 const program = new Command();
 
+/**
+ * Program definition. Ensure that GH actions always bump this version number to match the package version.
+ */
 program
     .name('generate-api-client')
     .description('Generate React components with TanStack Query from API request files')
@@ -29,6 +31,9 @@ program
 
 const options = program.opts();
 
+/**
+ * Entrypoint of the application. 
+ */
 const main = async () => {
     try {
         if (!options.file) {
@@ -65,12 +70,7 @@ const main = async () => {
                 options.name,
                 options.output
             );
-
-            if (result.success) {
-                console.log(`Component generated: ${result.filePath}`);
-            } else {
-                throw new ClientCodeGenerationError(result.filePath, result.error);
-            }
+            console.log(`Component generated: ${result.componentName} at ${result.filePath}`);
         }
     } catch (error: any) {
         if (error instanceof FileParseError ||

@@ -5,16 +5,22 @@
  * with TanStack Query integration from API request files.
  */
 
-// Core functionality exports
+/**
+ * Core functional exports
+ */
 export { apiParameters, apiResponse, callResult, callSuppliedApi } from './core/callSuppliedApi';
 export { generateClientCode, FileCreationResult } from './core/generateClientCode';
 export { generateResponseType, InterfaceMap } from './core/mapResponseToType';
 export { parseProvidedFile } from './core/parseProvidedFile';
 
-// Type definitions
+/**
+ * Custom type definitions
+ */
 export { HTTP_METHOD, staticTypedRequest } from './core/types';
 
-// Error classes for proper error handling
+/**
+ * Application level error classes
+ */
 export { 
     FileParseError, 
     ApiCallError, 
@@ -22,7 +28,9 @@ export {
     ClientCodeGenerationError 
 } from './core/errors';
 
-// Utility functions that might be useful for advanced users
+/**
+ * Utility functions for file parsing mechanisms
+ */
 export { 
     splitAndFilterLines,
     extractMethodAndUrl,
@@ -47,3 +55,10 @@ export {
     extractBody,
     extractUrl
 } from './util/txtParsingUtils';
+
+/**
+ * Validation utility functions
+ */
+export {
+    
+}

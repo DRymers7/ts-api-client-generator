@@ -1,19 +1,15 @@
 /**
  * Centralized validation utilities for input validation across the application.
- * 
- * This module follows the principle of separation of concerns by:
- * 1. Separating validation logic from business logic
- * 2. Making validation functions pure (no side effects)
- * 3. Returning validation results rather than throwing errors
- * 4. Being reusable across different contexts
  */
+import { create } from 'domain';
+import fs, {constants} from 'fs';
 
 /**
  * Represents the result of a validation operation.
  * Using a result type instead of throwing exceptions makes validation
  * composable and testable.
  */
-export interface ValidationResult {
+interface ValidationResult {
     isValid: boolean;
     errorMessage?: string;
     suggestions?: string[];
@@ -22,22 +18,79 @@ export interface ValidationResult {
 /**
  * Creates a successful validation result.
  */
-function createValidResult(): ValidationResult {
+const createValidResult = (): ValidationResult => {
     return { isValid: true };
 }
 
 /**
  * Creates a failed validation result with error message and optional suggestions.
  */
-function createInvalidResult(
+const createInvalidResult = (
     errorMessage: string, 
     suggestions: string[] = []
-): ValidationResult {
+): ValidationResult => {
     return { 
         isValid: false, 
         errorMessage, 
         suggestions 
     };
+}
+
+/**
+ * Function to validate all initial program arguments, creating 
+ * valid/invalid results as validations occur. If any validations fail, 
+ * a ValidationError will be thrown.
+ */
+const validateProgramArguments = (
+    filePath: any,
+    outputDirectory: any,
+    componentName: any,
+): void => {
+    const validationResults = [
+        validateFileExists(filePath),
+        validateFileCanBeRead(filePath),
+        validateOutputPath(outputDirectory),
+        validateComponentName(componentName)
+    ];
+    validationResults.flatMap((result) => {
+        
+    })
+}
+
+/**
+ * Validates a file exists on the path.
+ * 
+ * @param filePath path to provided input file.
+ * @returns Validation result depending on whether or not the file
+ * exists.
+ */
+const validateFileExists = (filePath: string): ValidationResult => {
+    if (!fs.existsSync(filePath)) {
+        return createInvalidResult(
+            "Input file path does not exist.",
+            ["Please ensure that the file path to the test is correct, and exists."]
+        );
+    }
+    return createValidResult();
+}
+
+/**
+ * Validates a file can be read. 
+ * 
+ * @param filePath path to provided input file.
+ * @returns Validation result depending on whether or not the file
+ * can be read.
+ */
+const validateFileCanBeRead = (filePath: string): ValidationResult => {
+    try {
+        fs.accessSync(filePath, constants.R_OK);
+    } catch (error: any) {
+        return createInvalidResult(
+            "Input file cannot be read.",
+            ["Please ensure that the provided file has the correct permissions."]
+        );    
+    }
+    return createValidResult();
 }
 
 /**
@@ -47,11 +100,8 @@ function createInvalidResult(
  * - Start with an uppercase letter (PascalCase)
  * - Contain only letters, numbers, underscores, and dollar signs
  * - Not be empty or just whitespace
- * 
- * This is more permissive than my original validation, aligning with
- * actual React and JavaScript identifier rules.
  */
-export function validateComponentName(componentName: string): ValidationResult {
+const validateComponentName = (componentName: string): ValidationResult => {
     // Check for null, undefined, or empty string
     if (!componentName || typeof componentName !== 'string') {
         return createInvalidResult(
@@ -110,10 +160,10 @@ export function validateComponentName(componentName: string): ValidationResult {
  * require a complete TypeScript compiler. We check for reasonable indicators
  * that the string contains interface definitions.
  */
-export function validateTypeScriptInterface(
+const validateTypeScriptInterface = (
     interfaceString: string, 
     context: string = 'interface'
-): ValidationResult {
+): ValidationResult => {
     if (!interfaceString || typeof interfaceString !== 'string') {
         return createInvalidResult(
             `${context} definition is required and must be a string`,
@@ -177,7 +227,7 @@ export function validateTypeScriptInterface(
  * Note: This only validates the format of the path, not whether it exists
  * or is writable. File system operations should be handled separately.
  */
-export function validateOutputPath(outputPath: string): ValidationResult {
+const validateOutputPath = (outputPath: string): ValidationResult => {
     if (!outputPath || typeof outputPath !== 'string') {
         return createInvalidResult(
             'Output path is required and must be a string',
@@ -221,9 +271,9 @@ export function validateOutputPath(outputPath: string): ValidationResult {
  * This is useful when you need to validate multiple inputs and want to
  * collect all the validation errors at once.
  */
-export function combineValidationResults(
+const combineValidationResults = (
     ...results: ValidationResult[]
-): ValidationResult {
+): ValidationResult => {
     const failedResults = results.filter(result => !result.isValid);
     
     if (failedResults.length === 0) {
@@ -249,10 +299,10 @@ export function combineValidationResults(
  * This bridges the gap between our pure validation functions and the error
  * handling patterns used elsewhere in the application.
  */
-export function throwIfInvalid<T extends Error>(
+const throwIfInvalid = <T extends Error>(
     validationResult: ValidationResult,
     createError: (message: string) => T
-): void {
+): void => {
     if (!validationResult.isValid) {
         let message = validationResult.errorMessage || 'Validation failed';
         
@@ -264,4 +314,10 @@ export function throwIfInvalid<T extends Error>(
         
         throw createError(message);
     }
+}
+
+export {
+    ValidationResult,
+    validateComponentName,
+
 }
