@@ -71,13 +71,19 @@ export class ClientCodeGenerationError extends Error {
  * throw new ValidationError(validationResults);
  */
 export class ValidationError extends Error {
+  public readonly failingValidations: ValidationResult[];
+
   /**
    * @param validationResults - array of validation result interfaces containing
    * more context on what failed. The error message will contain all failing validations.
    */
   constructor(validationResults: ValidationResult[]) {
-    super(`Failed to validate arguments/results ${console.log("")}}`);
-    this.name = 'ValidationError';
+    super("Failed to validate arguments/results");
+    this.name = "ValidationError";
+    this.failingValidations = validationResults;
+
+    // Restore prototype chain for instanceof to work
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
 

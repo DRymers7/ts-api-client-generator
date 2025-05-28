@@ -25,7 +25,8 @@ export {
     FileParseError, 
     ApiCallError, 
     ResponseTypeGenerationError, 
-    ClientCodeGenerationError 
+    ClientCodeGenerationError,
+    ValidationError
 } from './core/errors';
 
 /**
@@ -60,5 +61,5 @@ export {
  * Validation utility functions
  */
 export {
-    
-}
+    validateProgramArguments
+} from './util/validationUtils';

@@ -12,6 +12,8 @@ import {
     ApiCallError,
     ResponseTypeGenerationError,
     ClientCodeGenerationError,
+    validateProgramArguments,
+    ValidationError
 } from '../index';
 
 const program = new Command();
@@ -78,6 +80,17 @@ const main = async () => {
             error instanceof ResponseTypeGenerationError ||
             error instanceof ClientCodeGenerationError) {
             console.error(`Error: ${error.message}`);
+        } else if (error instanceof ValidationError) {
+            console.error("Validation failed with the following issues:\n");
+            for (const result of error.failingValidations) {
+                console.error(`- ${result.errorMessage}`);
+                if (result.suggestions && result.suggestions.length > 0) {
+                    console.error(`  Suggestions:`);
+                    for (const suggestion of result.suggestions) {
+                        console.error(`    • ${suggestion}`);
+                    }
+                }
+            }
         } else {
             console.error(`Unexpected error: ${error.message}`);
         }

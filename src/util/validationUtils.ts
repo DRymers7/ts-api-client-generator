@@ -3,6 +3,7 @@
  */
 import { create } from 'domain';
 import fs, {constants} from 'fs';
+import { ValidationError } from '../core/errors';
 
 /**
  * Represents the result of a validation operation.
@@ -52,9 +53,12 @@ const validateProgramArguments = (
         validateOutputPath(outputDirectory),
         validateComponentName(componentName)
     ];
-    validationResults.flatMap((result) => {
-        
-    })
+    const failingValidations = validationResults.filter(
+        result => !result.isValid
+    );
+    if (failingValidations.length !== 0) {
+        throw new ValidationError(failingValidations);
+    }
 }
 
 /**
@@ -319,5 +323,5 @@ const throwIfInvalid = <T extends Error>(
 export {
     ValidationResult,
     validateComponentName,
-
+    validateProgramArguments
 }
