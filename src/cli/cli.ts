@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import {Command} from 'commander';
 import path from 'path';
-import fs from 'fs';
 import {
     parseProvidedFile,
     callSuppliedApi,
@@ -50,7 +49,7 @@ const main = async () => {
         const rawApiResponse = await callSuppliedApi(requestContent);
         const typedApiResponse = generateResponseType(
             rawApiResponse.response,
-            options.name + 'Response'
+            `${options.name}Response`
         );
 
         if (options.dryRun) {
@@ -73,7 +72,7 @@ const main = async () => {
                 `Component generated: ${result.componentName} at ${result.filePath}`
             );
         }
-    } catch (error: any) {
+    } catch (error) {
         if (
             error instanceof FileParseError ||
             error instanceof ApiCallError ||
@@ -99,8 +98,10 @@ const main = async () => {
                     }),
                 ].join('\n')
             );
+        } else if (error instanceof Error) {
+            console.error(`Unexpected error: ${error.message}.`);
         } else {
-            console.error(`Unexpected error: ${error.message}`);
+            console.error(`Unknown error: ${error}`);
         }
         process.exit(1);
     }

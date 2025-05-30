@@ -1,11 +1,7 @@
 import {describe, it, expect} from 'vitest';
-import {
-    apiParameters,
-    apiResponse,
-    callSuppliedApi,
-} from '../../src/core/callSuppliedApi';
+import {fail} from 'assert';
+import {apiParameters, callSuppliedApi} from '../../src/core/callSuppliedApi';
 import {ApiCallError} from '../../src/core/errors';
-import {HTTP_METHOD} from '../../src/core/types';
 
 const OPEN_URL: string = 'https://restcountries.com/v3.1/all';
 
@@ -58,7 +54,7 @@ describe('callSuppliedApi module tests', () => {
                 name: 'ApiCallError',
             })
         );
-    }, 10000);
+    }, 15000);
 
     it('should throw ApiCallError for HTTP error responses (404)', async () => {
         const parameters: apiParameters = {
@@ -75,11 +71,15 @@ describe('callSuppliedApi module tests', () => {
             await callSuppliedApi(parameters);
             // If we reach this point, the test should fail because no error was thrown
             expect(true).toBe(false); // Force failure with descriptive message
-        } catch (error: any) {
-            expect(error).toBeInstanceOf(ApiCallError);
-            expect(error.message).toContain('404');
+        } catch (error) {
+            if (error instanceof Error) {
+                expect(error).toBeInstanceOf(ApiCallError);
+                expect(error.message).toContain('404');
+            } else {
+                fail();
+            }
         }
-    }, 10000);
+    }, 15000);
 
     it('should preserve request parameters in the response', async () => {
         const parameters: apiParameters = {

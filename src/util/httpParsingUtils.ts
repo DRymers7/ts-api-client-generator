@@ -9,12 +9,11 @@
  * @param fileContent raw string content of an input http file
  * @returns string array of each line
  */
-const splitAndFilterLines = (fileContent: string): string[] => {
-    return fileContent
+const splitAndFilterLines = (fileContent: string): string[] =>
+    fileContent
         .split('\n')
         .map((line) => line.trim())
         .filter((line) => line.length > 0);
-};
 
 /**
  * Inspects the array of file lines and return the HTTP method and target URL
@@ -31,7 +30,7 @@ const extractMethodAndUrl = (fileLines: string[]): string[] => {
 };
 
 /**
- * Creates a record of request headers and incremenents the bodyStartIndex until the first
+ * Creates a record of request headers and increments the bodyStartIndex until the first
  * likely value of a JSON object.
  *
  * @param fileLines string[] of file lines extracted from original content
@@ -40,21 +39,31 @@ const extractMethodAndUrl = (fileLines: string[]): string[] => {
  */
 const createRecordOfHeaders = (
     fileLines: string[],
-    bodyStartIndex: number
+    initialBodyStartIndex: number
 ): [Record<string, string>, number] => {
-    const headers: Record<string, string> = {};
-    for (let i = 1; i < fileLines.length; i++) {
-        const line = fileLines[i];
-        if (line.startsWith('{') || line.startsWith('[')) {
-            break;
-        }
-        const [key, ...rest] = line.split(':');
-        if (!key || rest.length === 0) continue;
+    // Find where the body likely starts (first line that looks like JSON)
+    const bodyStartIndex = fileLines.findIndex(
+        (line, i) =>
+            i >= initialBodyStartIndex &&
+            (line.startsWith('{') || line.startsWith('['))
+    );
+    const headerLines = fileLines.slice(
+        initialBodyStartIndex,
+        bodyStartIndex === -1 ? fileLines.length : bodyStartIndex
+    );
 
-        headers[key.trim()] = rest.join(':').trim();
-        bodyStartIndex++;
-    }
-    return [headers, bodyStartIndex];
+    const headers = headerLines.reduce(
+        (acc, line) => {
+            const [key, ...rest] = line.split(':');
+            if (key && rest.length > 0) {
+                acc[key.trim()] = rest.join(':').trim();
+            }
+            return acc;
+        },
+        {} as Record<string, string>
+    );
+
+    return [headers, bodyStartIndex === -1 ? fileLines.length : bodyStartIndex];
 };
 
 /**
@@ -87,10 +96,12 @@ const parseRequestBody = (
  */
 const parseAuthHeader = (requestHeaders: Record<string, string>): string => {
     const authHeader =
-        requestHeaders['Authorization'] ?? requestHeaders['authorization'];
+        requestHeaders.Authorization ?? requestHeaders.authorization;
     if (authHeader?.toLowerCase().startsWith('bearer')) {
-        delete requestHeaders['Authorization'];
-        delete requestHeaders['authorization'];
+        // eslint-disable-next-line no-param-reassign
+        delete requestHeaders.Authorization;
+        // eslint-disable-next-line no-param-reassign
+        delete requestHeaders.authorization;
     }
     return authHeader;
 };

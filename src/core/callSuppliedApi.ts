@@ -1,14 +1,6 @@
+import axios from 'axios';
 import {ApiCallError} from './errors';
 import {HTTP_METHOD} from './types';
-import axios from 'axios';
-
-/**
- * Wrapped object of working request/response
- */
-interface callResult {
-    response: apiResponse;
-    requestUsed: apiParameters;
-}
 
 /**
  * Parameters used for REST request to an API
@@ -29,6 +21,14 @@ interface apiResponse {
     responseStatus: string;
     responseCode: number;
     responseBody?: object;
+}
+
+/**
+ * Wrapped object of working request/response
+ */
+interface callResult {
+    response: apiResponse;
+    requestUsed: apiParameters;
 }
 
 /**
@@ -75,23 +75,25 @@ const callSuppliedApi = async (
             },
             requestUsed: parameters,
         };
-    } catch (error: any) {
-        if (error.response) {
-            // The request was made and the server responded with an error status
-            throw new ApiCallError(
-                error.response.status,
-                error.response.statusText || 'HTTP Error'
-            );
-        } else if (error.request) {
-            // Network error - request was made but no response received
-            // This includes DNS failures, timeouts, connection refused, etc.
-            throw new ApiCallError(
-                0, // Use 0 to indicate network-level failure
-                'Network Error: Unable to reach the server'
-            );
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            if (error.response) {
+                throw new ApiCallError(
+                    error.response.status,
+                    error.response.statusText || 'HTTP Error'
+                );
+            } else if (error.request) {
+                throw new ApiCallError(
+                    0,
+                    'Network Error: Unable to reach the server'
+                );
+            } else {
+                throw new ApiCallError(0, `Request Error: ${error.message}`);
+            }
+        } else if (error instanceof Error) {
+            throw new ApiCallError(0, `Unknown error: ${error.message}`);
         } else {
-            // Something else went wrong (invalid configuration, etc.)
-            throw new ApiCallError(0, `Request Error: ${error.message}`);
+            throw new ApiCallError(0, 'An unknown error occurred.');
         }
     }
 };

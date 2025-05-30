@@ -15,3 +15,18 @@ export const staticTypedRequest: string = `interface apiParameters {
     queryParams?: Record<string, string>;
     requestBody?: object;
 };`;
+
+export interface PostmanRequest {
+    method?: string;
+    url?:
+        | string
+        | {
+              raw?: string;
+              host?: string[];
+              path?: string[];
+          };
+    header?: {key: string; value: string}[];
+    body?: {raw?: string};
+}
+
+export type ShellToken = string | { op: string };
