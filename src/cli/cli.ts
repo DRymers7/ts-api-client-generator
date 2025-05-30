@@ -13,7 +13,7 @@ import {
     ResponseTypeGenerationError,
     ClientCodeGenerationError,
     validateProgramArguments,
-    ValidationError
+    ValidationError,
 } from '../index';
 
 const program = new Command();
@@ -23,31 +23,28 @@ const program = new Command();
  */
 program
     .name('generate-api-client')
-    .description('Generate React components with TanStack Query from API request files')
+    .description(
+        'Generate React components with TanStack Query from API request files'
+    )
     .version('1.0.0')
     .option('-f, --file <path>', 'Path to request file (.http, .json, or .txt)')
     .option('-o, --output <dir>', 'Output directory', process.cwd())
-    .option('-n, --name <componentName>', 'Component name', 'GeneratedApiComponent')
+    .option(
+        '-n, --name <componentName>',
+        'Component name',
+        'GeneratedApiComponent'
+    )
     .option('--dry-run', 'Show what would be generated without writing files')
     .parse();
 
 const options = program.opts();
 
 /**
- * Entrypoint of the application. 
+ * Entrypoint of the application.
  */
 const main = async () => {
     try {
-        if (!options.file) {
-            console.error('Error: --file option is required');
-            program.help();
-            return;
-        }
-
-        if (!fs.existsSync(options.file)) {
-            console.error(`Error: File not found: ${options.file}`);
-            process.exit(1);
-        }
+        validateProgramArguments(options.file, options.output, options.name);
 
         const requestContent = await parseProvidedFile(options.file);
         const rawApiResponse = await callSuppliedApi(requestContent);
@@ -72,25 +69,36 @@ const main = async () => {
                 options.name,
                 options.output
             );
-            console.log(`Component generated: ${result.componentName} at ${result.filePath}`);
+            console.log(
+                `Component generated: ${result.componentName} at ${result.filePath}`
+            );
         }
     } catch (error: any) {
-        if (error instanceof FileParseError ||
+        if (
+            error instanceof FileParseError ||
             error instanceof ApiCallError ||
             error instanceof ResponseTypeGenerationError ||
-            error instanceof ClientCodeGenerationError) {
+            error instanceof ClientCodeGenerationError
+        ) {
             console.error(`Error: ${error.message}`);
         } else if (error instanceof ValidationError) {
-            console.error("Validation failed with the following issues:\n");
-            for (const result of error.failingValidations) {
-                console.error(`- ${result.errorMessage}`);
-                if (result.suggestions && result.suggestions.length > 0) {
-                    console.error(`  Suggestions:`);
-                    for (const suggestion of result.suggestions) {
-                        console.error(`    • ${suggestion}`);
-                    }
-                }
-            }
+            console.error(
+                [
+                    'Validation failed with the following issues:',
+                    ...error.failingValidations.flatMap((result) => {
+                        const base = [`- ${result.errorMessage}`];
+                        const suggestions = result.suggestions?.length
+                            ? [
+                                  '  Suggestions:',
+                                  ...result.suggestions.map(
+                                      (s) => `    • ${s}`
+                                  ),
+                              ]
+                            : [];
+                        return [...base, ...suggestions];
+                    }),
+                ].join('\n')
+            );
         } else {
             console.error(`Unexpected error: ${error.message}`);
         }

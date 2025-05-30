@@ -4,7 +4,7 @@
  */
 import {CodeBlockWriter, Project, SourceFile} from 'ts-morph';
 import path from 'path';
-import { ClientCodeGenerationError } from './errors';
+import {ClientCodeGenerationError} from './errors';
 
 /**
  * Result of successful file creation operation
@@ -25,7 +25,7 @@ interface FileCreationResult {
  * @param requestUsed - The actual, working apiParameters object used for the request.
  * @param outputDir - The directory to output the generated functional component, defaulting to the current working directory.
  * @returns A promise that resolves with the file creation result.
- * @throws ClientCodeGenerationError when errors occur while writing. 
+ * @throws ClientCodeGenerationError when errors occur while writing.
  */
 const generateClientCode = async (
     typedResponse: string,
@@ -51,7 +51,7 @@ const generateClientCode = async (
         return {
             success: true,
             filePath,
-            componentName
+            componentName,
         };
     } catch (error: any) {
         throw new ClientCodeGenerationError(

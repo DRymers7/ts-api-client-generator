@@ -91,10 +91,7 @@ const callSuppliedApi = async (
             );
         } else {
             // Something else went wrong (invalid configuration, etc.)
-            throw new ApiCallError(
-                0,
-                `Request Error: ${error.message}`
-            );
+            throw new ApiCallError(0, `Request Error: ${error.message}`);
         }
     }
 };

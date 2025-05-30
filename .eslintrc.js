@@ -5,6 +5,13 @@ module.exports = {
         es2021: true,
         jquery: true,
     },
+    settings: {
+        'import/resolver': {
+            typescript: {
+                project: ['./tsconfig.json', './tsconfig.test.json'], // include test config
+            },
+        },
+    },
     extends: [
         'airbnb-base', // Airbnb JS style guide
         'prettier', // Prettier compatibility

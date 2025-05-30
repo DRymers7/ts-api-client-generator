@@ -3,7 +3,7 @@
  * mapping that response to a specific type that can be used in a react component.
  */
 import {apiResponse} from './callSuppliedApi';
-import { ResponseTypeGenerationError } from './errors';
+import {ResponseTypeGenerationError} from './errors';
 
 /**
  * A mapping of interface names to their stringified TypeScript definitions.
@@ -25,7 +25,9 @@ const generateResponseType = (
     rootName: string = 'ApiResponse'
 ): string => {
     try {
-        const responseBody = validateResponseBody(restCallResponse.responseBody);
+        const responseBody = validateResponseBody(
+            restCallResponse.responseBody
+        );
 
         const interfaces: InterfaceMap = {};
         const rootTypeName = convertToPascalCase(rootName);

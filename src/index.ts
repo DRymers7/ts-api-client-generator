@@ -1,6 +1,6 @@
 /**
  * Main library entry point for ts-api-client-generator
- * 
+ *
  * This package helps developers generate TypeScript-typed React components
  * with TanStack Query integration from API request files.
  */
@@ -8,36 +8,44 @@
 /**
  * Core functional exports
  */
-export { apiParameters, apiResponse, callResult, callSuppliedApi } from './core/callSuppliedApi';
-export { generateClientCode, FileCreationResult } from './core/generateClientCode';
-export { generateResponseType, InterfaceMap } from './core/mapResponseToType';
-export { parseProvidedFile } from './core/parseProvidedFile';
+export {
+    apiParameters,
+    apiResponse,
+    callResult,
+    callSuppliedApi,
+} from './core/callSuppliedApi';
+export {
+    generateClientCode,
+    FileCreationResult,
+} from './core/generateClientCode';
+export {generateResponseType, InterfaceMap} from './core/mapResponseToType';
+export {parseProvidedFile} from './core/parseProvidedFile';
 
 /**
  * Custom type definitions
  */
-export { HTTP_METHOD, staticTypedRequest } from './core/types';
+export {HTTP_METHOD, staticTypedRequest} from './core/types';
 
 /**
  * Application level error classes
  */
-export { 
-    FileParseError, 
-    ApiCallError, 
-    ResponseTypeGenerationError, 
+export {
+    FileParseError,
+    ApiCallError,
+    ResponseTypeGenerationError,
     ClientCodeGenerationError,
-    ValidationError
+    ValidationError,
 } from './core/errors';
 
 /**
  * Utility functions for file parsing mechanisms
  */
-export { 
+export {
     splitAndFilterLines,
     extractMethodAndUrl,
     createRecordOfHeaders,
     parseRequestBody,
-    parseAuthHeader
+    parseAuthHeader,
 } from './util/httpParsingUtils';
 
 export {
@@ -45,7 +53,7 @@ export {
     extractTargetUrl,
     extractHeadersFromRequest,
     extractJsonBodyFromRequest,
-    extractAuthHeader as extractAuthHeaderFromJson
+    extractAuthHeader as extractAuthHeaderFromJson,
 } from './util/jsonParsingUtils';
 
 export {
@@ -54,12 +62,10 @@ export {
     extractMethod,
     extractHeaders,
     extractBody,
-    extractUrl
+    extractUrl,
 } from './util/txtParsingUtils';
 
 /**
  * Validation utility functions
  */
-export {
-    validateProgramArguments
-} from './util/validationUtils';
+export {validateProgramArguments} from './util/validationUtils';

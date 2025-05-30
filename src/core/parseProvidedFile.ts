@@ -27,7 +27,7 @@ import {
     extractJsonBodyFromRequest,
     extractTargetUrl,
 } from '../util/jsonParsingUtils';
-import { FileParseError } from './errors';
+import {FileParseError} from './errors';
 
 const HTTP_EXTENSION = '.http';
 const TXT_EXTENSION = '.txt';
@@ -45,7 +45,7 @@ const parseProvidedFile = async (filePath: string): Promise<apiParameters> => {
     try {
         // Read file content once, then pass to appropriate parser
         const content = await fs.readFile(filePath, 'utf-8');
-        const extension = path.extname(filePath).toLowerCase();        
+        const extension = path.extname(filePath).toLowerCase();
         switch (extension) {
             case HTTP_EXTENSION:
                 return parseHttpFile(content);
@@ -54,13 +54,16 @@ const parseProvidedFile = async (filePath: string): Promise<apiParameters> => {
             case JSON_EXTENSION:
                 return parseJsonFile(content);
             default:
-                throw new FileParseError(filePath, `Unsupported file type: ${extension}`);
+                throw new FileParseError(
+                    filePath,
+                    `Unsupported file type: ${extension}`
+                );
         }
     } catch (error: any) {
         // Propagate error if it is already this type.
         if (error instanceof FileParseError) {
             throw error;
-        }        
+        }
         throw new FileParseError(filePath, error.message);
     }
 };

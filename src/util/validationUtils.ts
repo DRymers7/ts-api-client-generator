@@ -1,9 +1,8 @@
 /**
  * Centralized validation utilities for input validation across the application.
  */
-import { create } from 'domain';
 import fs, {constants} from 'fs';
-import { ValidationError } from '../core/errors';
+import {ValidationError} from '../core/errors';
 
 /**
  * Represents the result of a validation operation.
@@ -20,67 +19,66 @@ interface ValidationResult {
  * Creates a successful validation result.
  */
 const createValidResult = (): ValidationResult => {
-    return { isValid: true };
-}
+    return {isValid: true};
+};
 
 /**
  * Creates a failed validation result with error message and optional suggestions.
  */
 const createInvalidResult = (
-    errorMessage: string, 
+    errorMessage: string,
     suggestions: string[] = []
 ): ValidationResult => {
-    return { 
-        isValid: false, 
-        errorMessage, 
-        suggestions 
+    return {
+        isValid: false,
+        errorMessage,
+        suggestions,
     };
-}
+};
 
 /**
- * Function to validate all initial program arguments, creating 
- * valid/invalid results as validations occur. If any validations fail, 
+ * Function to validate all initial program arguments, creating
+ * valid/invalid results as validations occur. If any validations fail,
  * a ValidationError will be thrown.
  */
 const validateProgramArguments = (
     filePath: any,
     outputDirectory: any,
-    componentName: any,
+    componentName: any
 ): void => {
     const validationResults = [
         validateFileExists(filePath),
         validateFileCanBeRead(filePath),
         validateOutputPath(outputDirectory),
-        validateComponentName(componentName)
+        validateComponentName(componentName),
     ];
     const failingValidations = validationResults.filter(
-        result => !result.isValid
+        (result) => !result.isValid
     );
     if (failingValidations.length !== 0) {
         throw new ValidationError(failingValidations);
     }
-}
+};
 
 /**
  * Validates a file exists on the path.
- * 
+ *
  * @param filePath path to provided input file.
  * @returns Validation result depending on whether or not the file
  * exists.
  */
 const validateFileExists = (filePath: string): ValidationResult => {
-    if (!fs.existsSync(filePath)) {
-        return createInvalidResult(
-            "Input file path does not exist.",
-            ["Please ensure that the file path to the test is correct, and exists."]
-        );
+    if (!fs.existsSync(filePath) || filePath === null || filePath === '') {
+        return createInvalidResult('Input file path does not exist.', [
+            'Please ensure that the file path to the test is correct, and exists.',
+        ]);
     }
     return createValidResult();
-}
+};
 
 /**
- * Validates a file can be read. 
- * 
+ * Validates a file can be read.
+ *
  * @param filePath path to provided input file.
  * @returns Validation result depending on whether or not the file
  * can be read.
@@ -89,17 +87,16 @@ const validateFileCanBeRead = (filePath: string): ValidationResult => {
     try {
         fs.accessSync(filePath, constants.R_OK);
     } catch (error: any) {
-        return createInvalidResult(
-            "Input file cannot be read.",
-            ["Please ensure that the provided file has the correct permissions."]
-        );    
+        return createInvalidResult('Input file cannot be read.', [
+            'Please ensure that the provided file has the correct permissions.',
+        ]);
     }
     return createValidResult();
-}
+};
 
 /**
  * Validates that a component name follows React naming conventions.
- * 
+ *
  * React component names must:
  * - Start with an uppercase letter (PascalCase)
  * - Contain only letters, numbers, underscores, and dollar signs
@@ -110,7 +107,9 @@ const validateComponentName = (componentName: string): ValidationResult => {
     if (!componentName || typeof componentName !== 'string') {
         return createInvalidResult(
             'Component name is required and must be a string',
-            ['Provide a valid component name like "UserComponent" or "DataFetcher"']
+            [
+                'Provide a valid component name like "UserComponent" or "DataFetcher"',
+            ]
         );
     }
 
@@ -129,7 +128,7 @@ const validateComponentName = (componentName: string): ValidationResult => {
             `Component name "${componentName}" must start with an uppercase letter (PascalCase)`,
             [
                 'Examples: "UserComponent", "ApiDataFetcher", "ProfileManager"',
-                `Try: "${trimmed.charAt(0).toUpperCase()}${trimmed.slice(1)}"`
+                `Try: "${trimmed.charAt(0).toUpperCase()}${trimmed.slice(1)}"`,
             ]
         );
     }
@@ -141,7 +140,7 @@ const validateComponentName = (componentName: string): ValidationResult => {
             `Component name "${componentName}" contains invalid characters`,
             [
                 'Use only letters, numbers, underscores, and dollar signs',
-                'Examples: "UserProfile", "API_Component", "Data$Fetcher"'
+                'Examples: "UserProfile", "API_Component", "Data$Fetcher"',
             ]
         );
     }
@@ -150,84 +149,18 @@ const validateComponentName = (componentName: string): ValidationResult => {
     if (trimmed.length > 100) {
         return createInvalidResult(
             `Component name "${componentName}" is too long (${trimmed.length} characters)`,
-            ['Keep component names concise and descriptive (under 100 characters)']
-        );
-    }
-
-    return createValidResult();
-}
-
-/**
- * Validates that a string appears to contain TypeScript interface definitions.
- * 
- * This is intentionally basic validation since full TypeScript parsing would
- * require a complete TypeScript compiler. We check for reasonable indicators
- * that the string contains interface definitions.
- */
-const validateTypeScriptInterface = (
-    interfaceString: string, 
-    context: string = 'interface'
-): ValidationResult => {
-    if (!interfaceString || typeof interfaceString !== 'string') {
-        return createInvalidResult(
-            `${context} definition is required and must be a string`,
-            ['Provide a valid TypeScript interface definition']
-        );
-    }
-
-    const trimmed = interfaceString.trim();
-    if (trimmed.length === 0) {
-        return createInvalidResult(
-            `${context} definition cannot be empty`,
-            ['Provide a TypeScript interface like "interface ApiResponse { data: string; }"']
-        );
-    }
-
-    // Check for basic interface syntax indicators
-    const hasInterfaceKeyword = /\binterface\s+\w+/.test(trimmed);
-    const hasOpeningBrace = trimmed.includes('{');
-    const hasClosingBrace = trimmed.includes('}');
-
-    if (!hasInterfaceKeyword) {
-        return createInvalidResult(
-            `${context} definition must contain valid interface declarations`,
             [
-                'Start with "interface" keyword followed by interface name',
-                'Example: "interface ApiResponse { data: string; status: number; }"'
-            ]
-        );
-    }
-
-    if (!hasOpeningBrace || !hasClosingBrace) {
-        return createInvalidResult(
-            `${context} definition appears to have malformed interface syntax`,
-            [
-                'Ensure interfaces have opening and closing braces',
-                'Example: "interface MyInterface { property: type; }"'
-            ]
-        );
-    }
-
-    // Basic check for balanced braces (not perfect but catches common mistakes)
-    const openBraces = (trimmed.match(/{/g) || []).length;
-    const closeBraces = (trimmed.match(/}/g) || []).length;
-    
-    if (openBraces !== closeBraces) {
-        return createInvalidResult(
-            `${context} definition has unbalanced braces (${openBraces} opening, ${closeBraces} closing)`,
-            [
-                'Check that all interface definitions have matching opening and closing braces',
-                'Use a TypeScript-aware editor to help identify syntax errors'
+                'Keep component names concise and descriptive (under 100 characters)',
             ]
         );
     }
 
     return createValidResult();
-}
+};
 
 /**
  * Validates that a file path string is reasonable for use as an output directory.
- * 
+ *
  * Note: This only validates the format of the path, not whether it exists
  * or is writable. File system operations should be handled separately.
  */
@@ -235,16 +168,17 @@ const validateOutputPath = (outputPath: string): ValidationResult => {
     if (!outputPath || typeof outputPath !== 'string') {
         return createInvalidResult(
             'Output path is required and must be a string',
-            ['Provide a valid directory path like "./src/components" or "/tmp/generated"']
+            [
+                'Provide a valid directory path like "./src/components" or "/tmp/generated"',
+            ]
         );
     }
 
     const trimmed = outputPath.trim();
     if (trimmed.length === 0) {
-        return createInvalidResult(
-            'Output path cannot be empty',
-            ['Provide a directory path where the component should be generated']
-        );
+        return createInvalidResult('Output path cannot be empty', [
+            'Provide a directory path where the component should be generated',
+        ]);
     }
 
     // Check for obviously invalid path characters (varies by OS, but these are universally bad)
@@ -254,74 +188,19 @@ const validateOutputPath = (outputPath: string): ValidationResult => {
             `Output path "${outputPath}" contains invalid characters`,
             [
                 'Avoid characters like < > : " | ? * and control characters',
-                'Use forward slashes (/) or backslashes (\\) as path separators'
+                'Use forward slashes (/) or backslashes (\\) as path separators',
             ]
         );
     }
 
-    // Check for reasonable length
-    if (trimmed.length > 500) {
-        return createInvalidResult(
-            `Output path is too long (${trimmed.length} characters)`,
-            ['Keep file paths under 500 characters for compatibility']
-        );
-    }
-
     return createValidResult();
-}
-
-/**
- * Combines multiple validation results into a single result.
- * This is useful when you need to validate multiple inputs and want to
- * collect all the validation errors at once.
- */
-const combineValidationResults = (
-    ...results: ValidationResult[]
-): ValidationResult => {
-    const failedResults = results.filter(result => !result.isValid);
-    
-    if (failedResults.length === 0) {
-        return createValidResult();
-    }
-
-    // Combine all error messages and suggestions
-    const allErrors = failedResults
-        .map(result => result.errorMessage)
-        .filter(Boolean) as string[];
-    
-    const allSuggestions = failedResults
-        .flatMap(result => result.suggestions || []);
-
-    return createInvalidResult(
-        allErrors.join('; '),
-        allSuggestions
-    );
-}
-
-/**
- * Helper function to throw a specific error type based on validation results.
- * This bridges the gap between our pure validation functions and the error
- * handling patterns used elsewhere in the application.
- */
-const throwIfInvalid = <T extends Error>(
-    validationResult: ValidationResult,
-    createError: (message: string) => T
-): void => {
-    if (!validationResult.isValid) {
-        let message = validationResult.errorMessage || 'Validation failed';
-        
-        // Add suggestions to the error message if available
-        if (validationResult.suggestions && validationResult.suggestions.length > 0) {
-            message += '\n\nSuggestions:\n' + 
-                validationResult.suggestions.map(s => `  • ${s}`).join('\n');
-        }
-        
-        throw createError(message);
-    }
-}
+};
 
 export {
     ValidationResult,
     validateComponentName,
-    validateProgramArguments
-}
+    validateProgramArguments,
+    validateOutputPath,
+    validateFileExists,
+    validateFileCanBeRead,
+};

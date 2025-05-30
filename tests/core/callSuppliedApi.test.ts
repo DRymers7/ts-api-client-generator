@@ -51,11 +51,11 @@ describe('callSuppliedApi module tests', () => {
 
         // Method 1: Using rejects.toThrow (recommended for specific error types)
         await expect(callSuppliedApi(parameters)).rejects.toThrow(ApiCallError);
-        
+
         // Method 2: More detailed assertions about the error
         await expect(callSuppliedApi(parameters)).rejects.toThrow(
             expect.objectContaining({
-                name: 'ApiCallError'
+                name: 'ApiCallError',
             })
         );
     }, 10000);
@@ -92,7 +92,7 @@ describe('callSuppliedApi module tests', () => {
         };
 
         const result = await callSuppliedApi(parameters);
-        
+
         // Verify that the original request parameters are preserved
         expect(result.requestUsed).toEqual(parameters);
         expect(result.requestUsed.authToken).toBe('test-token');
