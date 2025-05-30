@@ -1,4 +1,6 @@
 import {describe, it, expect, beforeAll} from 'vitest';
+import path from 'path';
+import fs from 'fs';
 import {
     splitAndFilterLines,
     extractMethodAndUrl,
@@ -6,8 +8,6 @@ import {
     parseRequestBody,
     parseAuthHeader,
 } from '../../src/util/httpParsingUtils';
-import path from 'path';
-import fs from 'fs';
 
 /**
  * Module tests for httpParsingUtils. Follows a progressive pattern
@@ -31,6 +31,7 @@ describe('Test suite for http file parsing utility functions', () => {
         updatedBodyStartIndex
     );
     // pass a shallow copy to preserve the original in other tests
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const extractedAuthHeader = parseAuthHeader({...parsedHeaders});
 
     beforeAll(() => {});

@@ -1,4 +1,6 @@
-import {describe, it, expect, beforeAll} from 'vitest';
+import {describe, it, expect} from 'vitest';
+import path from 'path';
+import fs from 'fs';
 import {
     extractTokensFromRequest,
     extractAuthHeader,
@@ -7,8 +9,6 @@ import {
     extractHeaders,
     extractUrl,
 } from '../../src/util/txtParsingUtils';
-import path from 'path';
-import fs from 'fs';
 
 /**
  * Module tests for txtParsingUtils. Follows a progressive pattern
@@ -27,7 +27,6 @@ describe('Test suite for txt file parsing utility functions', () => {
     const targetUrl = extractUrl(curlTokens);
     const headers = extractHeaders(curlTokens);
     const body = extractBody(curlTokens);
-    const authHeader = extractAuthHeader({...headers});
 
     describe('extractTokensFromRequest function', () => {
         it('should return an array of string tokens', () => {

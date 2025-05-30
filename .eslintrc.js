@@ -1,12 +1,23 @@
 module.exports = {
     root: true,
+    parser: '@typescript-eslint/parser',
+    plugins: ['@typescript-eslint'],
     env: {
         browser: true,
         es2021: true,
-        jquery: true,
+        node: true,
+        jest: false,
+    },
+    settings: {
+        'import/resolver': {
+            typescript: {
+                project: ['./tsconfig.json', './tsconfig.test.json'], // include test config
+            },
+        },
     },
     extends: [
         'airbnb-base', // Airbnb JS style guide
+        'plugin:@typescript-eslint/recommended',
         'prettier', // Prettier compatibility
     ],
     parserOptions: {
@@ -21,8 +32,10 @@ module.exports = {
             'error',
             'ignorePackages',
             {
-                js: 'always',
+                js: 'never',
                 jsx: 'never',
+                ts: 'never',
+                tsx: 'never',
             },
         ],
         'space-before-function-paren': [
@@ -36,23 +49,24 @@ module.exports = {
     },
     overrides: [
         {
-            // Target all test and setup files
             files: [
-                '**/*.test.js',
-                '**/*.spec.js',
-                '**/jest-setup.js',
-                '**/setup.js',
-                'tests/**/*.js',
-                'jest.config.js',
+                '**/*.test.ts',
+                '**/*.spec.ts',
+                'tests/**/*.ts',
+                'vitest.config.ts',
             ],
             env: {
-                // Add Jest environment
                 jest: true,
             },
             rules: {
-                // Disable the no-extraneous-dependencies rule for test files
                 'import/no-extraneous-dependencies': 'off',
             },
         },
+        {
+            files: ['rollup.config.mjs'],
+            rules: {
+                'import/no-extraneous-dependencies': 'off'
+            }
+        }
     ],
 };

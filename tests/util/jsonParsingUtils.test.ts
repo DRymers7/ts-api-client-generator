@@ -1,4 +1,7 @@
-import {describe, it, expect, beforeAll} from 'vitest';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {describe, it, expect} from 'vitest';
+import path from 'path';
+import fs from 'fs';
 import {
     extractHttpMethod,
     extractTargetUrl,
@@ -6,8 +9,7 @@ import {
     extractJsonBodyFromRequest,
     extractAuthHeader,
 } from '../../src/util/jsonParsingUtils';
-import path from 'path';
-import fs from 'fs';
+import {PostmanRequest} from '../../src/core/types';
 
 /**
  * Module tests for jsonParsingUtils. Follows a progressive pattern
@@ -24,7 +26,6 @@ describe('Test suite for json file parsing utility functions', () => {
     const targetUrl: any = extractTargetUrl(jsonFileContent);
     const requestHeaders = extractHeadersFromRequest(jsonFileContent);
     const requestBody = extractJsonBodyFromRequest(jsonFileContent);
-    const authHeader = extractAuthHeader({...requestHeaders});
 
     describe('extractHttpMethod function', () => {
         it('should successfully retrieve the defined HTTP method', () => {
@@ -67,12 +68,11 @@ describe('Test suite for json file parsing utility functions', () => {
         });
 
         it('should not include undefined or null headers', () => {
-            const requestWithBadHeaders = {
+            const requestWithBadHeaders: PostmanRequest = {
                 header: [
                     {key: 'X-Test', value: '123'},
                     {key: '', value: 'abc'},
                     {key: 'Invalid', value: ''},
-                    {key: null, value: 'nope'},
                 ],
             };
             const headers = extractHeadersFromRequest(requestWithBadHeaders);

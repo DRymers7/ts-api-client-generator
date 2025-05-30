@@ -4,57 +4,17 @@
  */
 import {CodeBlockWriter, Project, SourceFile} from 'ts-morph';
 import path from 'path';
+import {ClientCodeGenerationError} from './errors';
 
 /**
- * Result of the file creation operation
+ * Result of successful file creation operation
+ * Note: This interface now only represents success cases since errors are thrown
  */
 interface FileCreationResult {
     success: boolean;
     filePath: string;
-    error?: string;
+    componentName?: string;
 }
-
-/**
- * Generates a React component that uses useQuery to fetch API data using a known working request,
- * and types the response using a generated TypeScript interface.
- *
- * @param typedResponse - The interface string for the API response.
- * @param typedRequest - The interface string for the API request (apiParameters).
- * @param requestUsed - The actual, working apiParameters object used for the request.
- * @returns A promise that resolves with the file creation result.
- */
-const generateClientCode = async (
-    typedResponse: string,
-    typedRequest: string,
-    requestUsed: object,
-    componentName: string = 'GeneratedApiComponent'
-): Promise<FileCreationResult> => {
-    try {
-        const fileName = `${componentName}.tsx`;
-        const filePath = path.join(__dirname, fileName);
-        const project = new Project();
-        const sourceFile = project.createSourceFile(filePath, '', {
-            overwrite: true,
-        });
-        addImportStatements(sourceFile);
-        addTypeDefinitions(sourceFile, typedResponse, typedRequest);
-        addApiCall(sourceFile);
-        const serializedRequest = JSON.stringify(requestUsed, null, 2);
-        addReactComponent(sourceFile, componentName, serializedRequest);
-        await project.save();
-
-        return {
-            success: true,
-            filePath,
-        };
-    } catch (error: any) {
-        return {
-            success: false,
-            filePath: '',
-            error: error.message,
-        };
-    }
-};
 
 /**
  * Adds import statements to the top of the source file.
@@ -113,7 +73,7 @@ const addApiCall = (sourceFile: SourceFile): void => {
             writer.writeLine(`  params: params.queryParams,`);
             writer.writeLine(`  data: params.requestBody,`);
             writer.writeLine(`});`);
-            writer.writeLine(`return response.data;`);
+            writer.writeLine(`return response.responseBody;`);
         },
     });
 };
@@ -160,6 +120,56 @@ const addReactComponent = (
                 .writeLine(`);`);
         },
     });
+};
+
+/**
+ * Generates a React component that uses useQuery to fetch API data using a known working request,
+ * and types the response using a generated TypeScript interface.
+ *
+ * @param typedResponse - The interface string for the API response.
+ * @param typedRequest - The interface string for the API request (apiParameters).
+ * @param requestUsed - The actual, working apiParameters object used for the request.
+ * @param outputDir - The directory to output the generated functional component, defaulting to the current working directory.
+ * @returns A promise that resolves with the file creation result.
+ * @throws ClientCodeGenerationError when errors occur while writing.
+ */
+const generateClientCode = async (
+    typedResponse: string,
+    typedRequest: string,
+    requestUsed: object,
+    componentName: string = 'GeneratedApiComponent',
+    outputDir: string = process.cwd()
+): Promise<FileCreationResult> => {
+    try {
+        const fileName = `${componentName}.tsx`;
+        const filePath = path.join(outputDir, fileName);
+        const project = new Project();
+        const sourceFile = project.createSourceFile(filePath, '', {
+            overwrite: true,
+        });
+        addImportStatements(sourceFile);
+        addTypeDefinitions(sourceFile, typedResponse, typedRequest);
+        addApiCall(sourceFile);
+        const serializedRequest = JSON.stringify(requestUsed, null, 2);
+        addReactComponent(sourceFile, componentName, serializedRequest);
+        await project.save();
+
+        return {
+            success: true,
+            filePath,
+            componentName,
+        };
+    } catch (error) {
+        if (error instanceof Error) {
+            throw new ClientCodeGenerationError(
+                path.join(outputDir, componentName),
+                error.message
+            );
+        } else {
+            console.error('Unknown error during code generation:', error);
+            throw error;
+        }
+    }
 };
 
 export {

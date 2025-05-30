@@ -3,6 +3,7 @@
  * mapping that response to a specific type that can be used in a react component.
  */
 import {apiResponse} from './callSuppliedApi';
+import {ResponseTypeGenerationError} from './errors';
 
 /**
  * A mapping of interface names to their stringified TypeScript definitions.
@@ -12,25 +13,16 @@ interface InterfaceMap {
 }
 
 /**
- * Generates a complete TypeScript interface definition string from an `apiResponse`.
+ * Converts a string to PascalCase. Removes special characters and capitalizes words.
  *
- * @param restCallResponse - The result object returned by a REST API call.
- * @param rootName - The name of the root interface to be generated (default: 'ApiResponse').
- * @returns A string containing one or more TypeScript interfaces. It must be done this way because
- * of TS runtime erasure.
+ * @param inputString - The input string to convert.
+ * @returns A PascalCase version of the input.
  */
-const generateResponseType = (
-    restCallResponse: apiResponse,
-    rootName: string = 'ApiResponse'
-): string => {
-    const responseBody = validateResponseBody(restCallResponse.responseBody);
-
-    const interfaces: InterfaceMap = {};
-    const rootTypeName = convertToPascalCase(rootName);
-    generateTypeFromObject(responseBody, rootTypeName, interfaces);
-
-    return Object.values(interfaces).join('\n\n');
-};
+const convertToPascalCase = (inputString: string): string =>
+    inputString
+        .replace(/[^a-zA-Z0-9]/g, ' ')
+        .replace(/\s+(.)/g, (_, group1) => group1.toUpperCase())
+        .replace(/^\w/, (character) => character.toUpperCase());
 
 /**
  * Infers a TypeScript type for a given key-value pair from a JSON object.
@@ -43,7 +35,7 @@ const generateResponseType = (
  */
 const inferType = (
     key: string,
-    value: any,
+    value: unknown, // JSON value
     interfaces: InterfaceMap,
     parentTypeName: string
 ): string => {
@@ -56,6 +48,7 @@ const inferType = (
     }
     if (typeof value === 'object') {
         const nestedTypeName = convertToPascalCase(`${parentTypeName}_${key}`);
+        // eslint-disable-next-line no-use-before-define
         generateTypeFromObject(value, nestedTypeName, interfaces);
         return nestedTypeName;
     }
@@ -65,6 +58,15 @@ const inferType = (
         return Number.isInteger(value) ? 'number' : 'number';
     return 'any';
 };
+
+/**
+ * Checks whether a value is considered "optional" in the context of an interface.
+ *
+ * @param value - The value to inspect.
+ * @returns `true` if the value is `undefined` or `null`, otherwise `false`.
+ */
+const isOptional = (value: unknown): boolean =>
+    value === undefined || value === null;
 
 /**
  * Recursively generates TypeScript interface definitions for a given object.
@@ -78,15 +80,17 @@ const generateTypeFromObject = (
     typeName: string,
     interfaces: InterfaceMap
 ): void => {
-    const lines: string[] = [`interface ${typeName} {`];
-
-    for (const [key, value] of Object.entries(obj)) {
-        const optionalFlag = isOptional(value) ? '?' : '';
-        const fieldType = inferType(key, value, interfaces, typeName);
-        lines.push(`  ${key}${optionalFlag}: ${fieldType};`);
-    }
-
-    lines.push('}');
+    const lines: string[] = [
+        `interface ${typeName} {`,
+        ...Object.keys(obj).map((key) => {
+            const value = obj[key as keyof typeof obj];
+            const optionalFlag = isOptional(value) ? '?' : '';
+            const fieldType = inferType(key, value, interfaces, typeName);
+            return `  ${key}${optionalFlag}: ${fieldType};`;
+        }),
+        '}',
+    ];
+    // eslint-disable-next-line no-param-reassign
     interfaces[typeName] = lines.join('\n');
 };
 
@@ -109,26 +113,30 @@ const validateResponseBody = (responseBody?: object): object => {
 };
 
 /**
- * Converts a string to PascalCase. Removes special characters and capitalizes words.
+ * Generates a complete TypeScript interface definition string from an `apiResponse`.
  *
- * @param inputString - The input string to convert.
- * @returns A PascalCase version of the input.
+ * @param restCallResponse - The result object returned by a REST API call.
+ * @param rootName - The name of the root interface to be generated (default: 'ApiResponse').
+ * @returns A string containing one or more TypeScript interfaces. It must be done this way because
+ * of TS runtime erasure.
  */
-const convertToPascalCase = (inputString: string): string => {
-    return inputString
-        .replace(/[^a-zA-Z0-9]/g, ' ')
-        .replace(/\s+(.)/g, (_, group1) => group1.toUpperCase())
-        .replace(/^\w/, (character) => character.toUpperCase());
-};
+const generateResponseType = (
+    restCallResponse: apiResponse,
+    rootName: string = 'ApiResponse'
+): string => {
+    try {
+        const responseBody = validateResponseBody(
+            restCallResponse.responseBody
+        );
 
-/**
- * Checks whether a value is considered "optional" in the context of an interface.
- *
- * @param value - The value to inspect.
- * @returns `true` if the value is `undefined` or `null`, otherwise `false`.
- */
-const isOptional = (value: any): boolean => {
-    return value === undefined || value === null;
+        const interfaces: InterfaceMap = {};
+        const rootTypeName = convertToPascalCase(rootName);
+        generateTypeFromObject(responseBody, rootTypeName, interfaces);
+
+        return Object.values(interfaces).join('\n\n');
+    } catch (error) {
+        throw new ResponseTypeGenerationError();
+    }
 };
 
 export {

@@ -3,15 +3,16 @@
  * postman requests
  */
 
+import {PostmanRequest} from '../core/types';
+
 /**
  * Extracts the HTTP method from the json request
  *
  * @param jsonRequest JSON value of postman request
  * @returns string of HTTP method, defaulting to GET
  */
-const extractHttpMethod = (jsonRequest: any): any => {
-    return jsonRequest.method ?? 'GET';
-};
+const extractHttpMethod = (jsonRequest: PostmanRequest): string =>
+    jsonRequest.method ?? 'GET';
 
 /**
  * Extracts target URL from json request
@@ -19,7 +20,7 @@ const extractHttpMethod = (jsonRequest: any): any => {
  * @param jsonRequest JSON value of postman request
  * @returns string of target URL, or empty string
  */
-const extractTargetUrl = (jsonRequest: any): any => {
+const extractTargetUrl = (jsonRequest: PostmanRequest): string => {
     const url =
         typeof jsonRequest.url === 'string'
             ? jsonRequest.url
@@ -38,16 +39,18 @@ const extractTargetUrl = (jsonRequest: any): any => {
  * @returns Record<string, string> of request headers
  */
 const extractHeadersFromRequest = (
-    jsonRequest: any
-): Record<string, string> => {
-    const headers: Record<string, string> = {};
-    for (const h of jsonRequest.header ?? []) {
-        if (h.key && h.value) {
-            headers[h.key] = h.value;
-        }
-    }
-    return headers;
-};
+    jsonRequest: PostmanRequest
+): Record<string, string> =>
+    (jsonRequest.header ?? []).reduce(
+        (headers, h) => {
+            if (h.key && h.value) {
+                // eslint-disable-next-line no-param-reassign
+                headers[h.key] = h.value;
+            }
+            return headers;
+        },
+        {} as Record<string, string>
+    );
 
 /**
  * Extracts request body from JSON request
@@ -55,7 +58,9 @@ const extractHeadersFromRequest = (
  * @param jsonRequest JSON of postman request
  * @returns request body of postman request
  */
-const extractJsonBodyFromRequest = (jsonRequest: any): any => {
+const extractJsonBodyFromRequest = (
+    jsonRequest: PostmanRequest
+): object | undefined => {
     const rawBody = jsonRequest.body?.raw;
     let parsedBody: object | undefined;
     try {
@@ -72,12 +77,16 @@ const extractJsonBodyFromRequest = (jsonRequest: any): any => {
  * @param requestHeaders record of request headers
  * @returns string value of auth header used in request
  */
-const extractAuthHeader = (requestHeaders: Record<string, string>): any => {
+const extractAuthHeader = (
+    requestHeaders: Record<string, string>
+): string | undefined => {
     const authHeader: string =
-        requestHeaders['Authorization'] ?? requestHeaders['authorization'];
+        requestHeaders.Authorization ?? requestHeaders.authorization;
     if (authHeader?.toLowerCase().startsWith('bearer')) {
-        delete requestHeaders['Authorization'];
-        delete requestHeaders['authorization'];
+        // eslint-disable-next-line no-param-reassign
+        delete requestHeaders.Authorization;
+        // eslint-disable-next-line no-param-reassign
+        delete requestHeaders.authorization;
     }
     return authHeader;
 };

@@ -3,6 +3,7 @@
  * generic cURL requests
  */
 import {parse as shellParse} from 'shell-quote';
+import {ShellToken} from '../core/types';
 import {apiParameters} from '../core/callSuppliedApi';
 
 /**
@@ -11,9 +12,9 @@ import {apiParameters} from '../core/callSuppliedApi';
  * @param fileContent raw txt file as string
  * @returns any[] of tokens from file
  */
-const extractTokensFromRequest = (fileContent: string): any[] => {
-    const tokens = (shellParse(fileContent) as string[]).map((t) =>
-        typeof t === 'object' ? (t as any).op : t
+const extractTokensFromRequest = (fileContent: string): string[] => {
+    const tokens = (shellParse(fileContent) as ShellToken[]).map((t) =>
+        typeof t === 'object' ? t.op : t
     );
     return tokens;
 };
@@ -25,10 +26,12 @@ const extractTokensFromRequest = (fileContent: string): any[] => {
  * @returns string value of auth header
  */
 const extractAuthHeader = (headers: Record<string, string>): string => {
-    const authHeader = headers['Authorization'] ?? headers['authorization'];
+    const authHeader = headers.Authorization ?? headers.authorization;
     if (authHeader?.toLowerCase().startsWith('bearer')) {
-        delete headers['Authorization'];
-        delete headers['authorization'];
+        // eslint-disable-next-line no-param-reassign
+        delete headers.Authorization;
+        // eslint-disable-next-line no-param-reassign
+        delete headers.authorization;
     }
     return authHeader;
 };
@@ -58,19 +61,19 @@ function extractMethod(tokens: string[]): apiParameters['httpMethod'] {
  * @returns record of <string, string> for each header in request
  */
 function extractHeaders(tokens: string[]): Record<string, string> {
-    const headers: Record<string, string> = {};
-    for (let i = 0; i < tokens.length; i++) {
-        if (tokens[i] === '-H' || tokens[i] === '--header') {
+    return tokens.reduce((headers, token, i) => {
+        if (token === '-H' || token === '--header') {
             const header = tokens[i + 1];
             if (header) {
                 const [key, ...rest] = header.split(':');
                 if (key && rest.length) {
+                    // eslint-disable-next-line no-param-reassign
                     headers[key.trim()] = rest.join(':').trim();
                 }
             }
         }
-    }
-    return headers;
+        return headers;
+    }, {} as Record<string, string>);
 }
 
 /**
@@ -80,22 +83,21 @@ function extractHeaders(tokens: string[]): Record<string, string> {
  * @returns object or undefined union type of request body
  */
 function extractBody(tokens: string[]): object | undefined {
-    for (let i = 0; i < tokens.length; i++) {
-        if (
-            ['-d', '--data', '--data-raw', '--data-binary'].includes(
-                tokens[i]
-            ) &&
-            tokens[i + 1]
-        ) {
-            try {
-                return JSON.parse(tokens[i + 1]);
-            } catch (e) {
-                throw new Error(
-                    `Invalid JSON body in curl command: ${tokens[i + 1]}`
-                );
-            }
+    const dataFlags = ['-d', '--data', '--data-raw', '--data-binary'];
+
+    const dataIndex = tokens.findIndex(
+        (token, index) => dataFlags.includes(token) && tokens[index + 1]
+    );
+
+    if (dataIndex !== -1) {
+        const rawBody = tokens[dataIndex + 1];
+        try {
+            return JSON.parse(rawBody);
+        } catch {
+            throw new Error(`Invalid JSON body in curl command: ${rawBody}`);
         }
     }
+
     return undefined;
 }
 
@@ -106,18 +108,16 @@ function extractBody(tokens: string[]): object | undefined {
  * @returns target URL for rest request
  */
 function extractUrl(tokens: string[]): string {
-    for (let i = 0; i < tokens.length; i++) {
-        const token = tokens[i];
-        if (
-            token.startsWith('http') &&
-            !token.startsWith('-') &&
-            !['-X', '--request', '-H', '--header', '-d', '--data'].includes(
-                tokens[i - 1]
-            )
-        ) {
-            return token.replace(/^['"]|['"]$/g, '');
-        }
+    const urlIndex = tokens.findIndex((token, i) =>
+        token.startsWith('http') &&
+        !token.startsWith('-') &&
+        !['-X', '--request', '-H', '--header', '-d', '--data'].includes(tokens[i - 1])
+    );
+
+    if (urlIndex !== -1) {
+        return tokens[urlIndex].replace(/^['"]|['"]$/g, '');
     }
+
     throw new Error('Could not determine URL from curl command.');
 }
 
