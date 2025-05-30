@@ -61,7 +61,7 @@ describe('mapResponseToType module tests', () => {
             const map: InterfaceMap = {};
             expect(inferType('arr', [1, 2], map, 'Parent')).toBe('number[]');
             expect(inferType('obj', {a: 1}, map, 'Parent')).toBe('ParentObj');
-            expect(map['ParentObj']).toContain('interface ParentObj');
+            expect(map.ParentObj).toContain('interface ParentObj');
         });
 
         it('should default empty arrays to any[]', () => {
@@ -74,7 +74,7 @@ describe('mapResponseToType module tests', () => {
         it('should generate a single interface correctly', () => {
             const map: InterfaceMap = {};
             generateTypeFromObject({id: 1, name: 'John'}, 'User', map);
-            expect(map['User']).toMatchInlineSnapshot(`
+            expect(map.User).toMatchInlineSnapshot(`
 "interface User {
   id: number;
   name: string;
@@ -97,7 +97,7 @@ describe('mapResponseToType module tests', () => {
             );
 
             expect(Object.keys(map)).toEqual(['AccountProfile', 'Account']);
-            expect(map['Account']).toContain('profile: AccountProfile');
+            expect(map.Account).toContain('profile: AccountProfile');
         });
     });
 

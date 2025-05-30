@@ -62,5 +62,11 @@ module.exports = {
                 'import/no-extraneous-dependencies': 'off',
             },
         },
+        {
+            files: ['rollup.config.mjs'],
+            rules: {
+                'import/no-extraneous-dependencies': 'off'
+            }
+        }
     ],
 };

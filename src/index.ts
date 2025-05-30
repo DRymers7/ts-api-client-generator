@@ -4,6 +4,7 @@
  * This package helps developers generate TypeScript-typed React components
  * with TanStack Query integration from API request files.
  */
+import parseProvidedFile from './core/parseProvidedFile';
 
 /**
  * Core functional exports
@@ -19,7 +20,7 @@ export {
     FileCreationResult,
 } from './core/generateClientCode';
 export {generateResponseType, InterfaceMap} from './core/mapResponseToType';
-export {parseProvidedFile} from './core/parseProvidedFile';
+export {parseProvidedFile};
 
 /**
  * Custom type definitions

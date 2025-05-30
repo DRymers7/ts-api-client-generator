@@ -4,6 +4,7 @@
     "publishConfig": {
         "access": "public"
     },
+    "type": "module",
     "description": "Automatically generate React components with useQuery from API request files (HTTP, cURL, Postman JSON)",
     "main": "dist/index.js",
     "module": "dist/index.esm.js",
@@ -18,7 +19,8 @@
     ],
     "scripts": {
         "dev": "tsx src/cli/cli.ts",
-        "build": "rimraf dist && rollup --bundleConfigAsCjs -c",
+        "clean": "rimraf dist",
+        "build": "npm run clean && rollup --bundleConfigAsCjs -c",
         "prepublishOnly": "npm run build",
         "format": "prettier . --write",
         "lint": "eslint . --ext .ts,.tsx",
@@ -42,15 +44,15 @@
         "code-generation",
         "rest-api"
     ],
-    "author": "Your Name <your.email@example.com>",
+    "author": "Derek Rymers rymersd@gmail.com",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/yourusername/ts-api-client-generator.git"
+        "url": "https://github.com/DRymers7/ts-api-client-generator.git"
     },
-    "homepage": "https://github.com/yourusername/ts-api-client-generator#readme",
+    "homepage": "https://github.com/DRymers7/ts-api-client-generator#readme",
     "bugs": {
-        "url": "https://github.com/yourusername/ts-api-client-generator/issues"
+        "url": "https://github.com/DRymers7/ts-api-client-generator/issues"
     },
     "engines": {
         "node": ">=16.0.0"
@@ -64,7 +66,6 @@
     },
     "devDependencies": {
         "@rollup/plugin-commonjs": "^25.0.0",
-        "@rollup/plugin-node-resolve": "^15.0.0",
         "@rollup/plugin-typescript": "^11.0.0",
         "@types/node": "^22.15.18",
         "@types/shell-quote": "^1.7.5",

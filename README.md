@@ -142,7 +142,6 @@ Options:
   -o, --output <dir>          Output directory (default: current directory)
   -n, --name <componentName>  React component name (default: "GeneratedApiComponent")
   --dry-run                   Preview what would be generated
-  -v, --verbose               Enable detailed logging
   -h, --help                  Display help information
 
 Examples:

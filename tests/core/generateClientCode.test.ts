@@ -1,5 +1,8 @@
 import {describe, it, expect, beforeEach, afterAll, beforeAll} from 'vitest';
 import {Project} from 'ts-morph';
+import path from 'path';
+import fs from 'fs';
+import os from 'os'
 import {
     addImportStatements,
     addTypeDefinitions,
@@ -7,9 +10,6 @@ import {
     addReactComponent,
     generateClientCode,
 } from '../../src/core/generateClientCode';
-import path from 'path';
-import fs from 'fs';
-import os from 'os';
 
 /**
  * Test suite for generateClientCode module. If working as intended, this module

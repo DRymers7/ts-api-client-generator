@@ -88,11 +88,11 @@ const main = async () => {
                         const base = [`- ${result.errorMessage}`];
                         const suggestions = result.suggestions?.length
                             ? [
-                                  '  Suggestions:',
-                                  ...result.suggestions.map(
-                                      (s) => `    • ${s}`
-                                  ),
-                              ]
+                                '  Suggestions:',
+                                ...result.suggestions.map(
+                                    (s) => `    • ${s}`
+                                ),
+                            ]
                             : [];
                         return [...base, ...suggestions];
                     }),
