@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import {Command} from 'commander';
+import { Command } from 'commander';
 import path from 'path';
 import {
     parseProvidedFile,
@@ -38,14 +38,25 @@ program
 
 const options = program.opts();
 
+// Resolve file path and output directory relative to the **current working directory**
+const resolvedFilePath = path.isAbsolute(options.file)
+    ? options.file
+    : path.resolve(process.cwd(), options.file);
+const resolvedOutputDir = path.isAbsolute(options.output)
+    ? options.output
+    : path.resolve(process.cwd(), options.output);
+
+console.log("Resolved file path: ", resolvedFilePath);
+console.log("Resolved output directory: ", resolvedOutputDir);
+
 /**
  * Entrypoint of the application.
  */
 const main = async () => {
     try {
-        validateProgramArguments(options.file, options.output, options.name);
+        validateProgramArguments(resolvedFilePath, resolvedOutputDir, options.name);
 
-        const requestContent = await parseProvidedFile(options.file);
+        const requestContent = await parseProvidedFile(resolvedFilePath);
         const rawApiResponse = await callSuppliedApi(requestContent);
         const typedApiResponse = generateResponseType(
             rawApiResponse.response,
@@ -55,7 +66,7 @@ const main = async () => {
         if (options.dryRun) {
             console.log('Component would be generated with:');
             console.log(`File: ${options.name}.tsx`);
-            console.log(`Location: ${path.resolve(options.output)}`);
+            console.log(`Location: ${path.resolve(resolvedOutputDir)}`);
             console.log('\nGenerated interfaces:');
             console.log(typedApiResponse);
             console.log('\nComponent would use request:');
@@ -66,7 +77,7 @@ const main = async () => {
                 staticTypedRequest,
                 requestContent,
                 options.name,
-                options.output
+                resolvedOutputDir
             );
             console.log(
                 `Component generated: ${result.componentName} at ${result.filePath}`

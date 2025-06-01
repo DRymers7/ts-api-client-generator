@@ -266,6 +266,17 @@ const {data, isLoading, isError} = useQuery({
 });
 ```
 
+## 🔥 Try It Yourself
+
+1. Clone this repository and install dependencies:
+```bash
+    git clone https://github.com/DRymers7/ts-api-client-generator.git
+    cd ts-api-client-generator
+    npm install
+    cd examples
+    npm run dev -- -f countries.postman.json -n CountrySearchComponent
+```
+
 ## 🐛 Troubleshooting
 
 ### Common Issues
@@ -292,8 +303,8 @@ const {data, isLoading, isError} = useQuery({
 
 If you encounter issues:
 
-1. Run with `--dry-run --verbose` to see what would be generated
-2. Check the [GitHub Issues](https://github.com/yourusername/ts-api-client-generator/issues)
+1. Run with `--dry-run` to see what would be generated
+2. Check the [GitHub Issues](https://github.com/DRymers7/ts-api-client-generator/issues)
 3. Review the [examples directory](./examples) for working samples
 
 ## 🤝 Contributing
@@ -304,7 +315,7 @@ Contributions are welcome! This project aims to make API client generation seaml
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ts-api-client-generator.git
+git clone https://github.com/DRymers7/ts-api-client-generator.git
 cd ts-api-client-generator
 
 # Install dependencies
@@ -315,9 +326,6 @@ npm test
 
 # Build the project
 npm run build
-
-# Test the CLI locally
-npm run dev -- -f examples/sample.http
 ```
 
 ### Project Structure
