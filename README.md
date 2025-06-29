@@ -35,7 +35,7 @@ This tool automates steps 3-5, letting you go from a working API request to a pr
 ### Installation
 
 ```bash
-# Install globally for CLI usage
+# Install globally for CLI usage (note, you will need the namespace @drymers or @DRymers7 depending on if you are targeting npm or GH packages)
 npm install -g ts-api-client-generator
 
 # Or install locally in your project
@@ -274,8 +274,7 @@ const {data, isLoading, isError} = useQuery({
     git clone https://github.com/DRymers7/ts-api-client-generator.git
     cd ts-api-client-generator
     npm install
-    cd examples
-    npm run dev -- -f countries.postman.json -n CountrySearchComponent
+    npx tsx src/cli/cli.ts --file ./examples/countries.postman.json --output ./tmp
 ```
 
 ## 🐛 Troubleshooting
