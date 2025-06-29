@@ -18,3 +18,4 @@ temp/
 
 # Optional: Environment files
 .env
+.npmrc

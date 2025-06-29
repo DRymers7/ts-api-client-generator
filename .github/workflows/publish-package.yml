@@ -1,4 +1,4 @@
-name: Publish Package
+name: Release Package
 
 on:
   push:
@@ -6,20 +6,16 @@ on:
       - master
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out code
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up Node.js for npm
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org/'
+          node-version: '18'
           cache: 'npm'
 
       - name: Install dependencies
@@ -28,27 +24,7 @@ jobs:
       - name: Build package
         run: npm run build
 
-      # 1. --- Publish to npm (username: drymers, scoped or unscoped) ---
-      - name: Publish to npm
+      - name: Publish with Changesets
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm run release  # (which should run `changeset publish`)
-
-      # 2. --- Switch to GitHub Packages name and publish ---
-      - name: Set up Node.js for GitHub Packages
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://npm.pkg.github.com/'
-          scope: '@DRymers7'
-
-      - name: Change package name for GitHub Packages
-        run: npm pkg set name=@DRymers7/ts-api-client-generator
-
-      - name: Publish to GitHub Packages
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm publish --registry=https://npm.pkg.github.com/ --access public
-
-      - name: Restore original package name for npm
-        run: npm pkg set name=@drymers/ts-api-client-generator
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx changeset publish
