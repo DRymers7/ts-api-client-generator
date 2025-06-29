@@ -1,10 +1,6 @@
-/**
- * Module responsible for taking working instances of client requests and API
- * responses, and then generating react components to handle those REST calls.
- */
-import {CodeBlockWriter, Project, SourceFile} from 'ts-morph';
-import path from 'path';
-import {ClientCodeGenerationError} from './errors';
+import { CodeBlockWriter, Project, SourceFile } from "ts-morph";
+import path from "path";
+import { ClientCodeGenerationError } from "./errors";
 
 /**
  * Result of successful file creation operation
@@ -18,22 +14,18 @@ interface FileCreationResult {
 
 /**
  * Adds import statements to the top of the source file.
- * (React + TanStack Query + Axios imports)
+ * (React Query + Axios imports)
  *
  * @param sourceFile SourceFile object from ts-morph, in the current project.
  */
 const addImportStatements = (sourceFile: SourceFile): void => {
     sourceFile.addImportDeclaration({
-        namedImports: ['useQuery'],
-        moduleSpecifier: '@tanstack/react-query',
+        namedImports: ["useQuery"],
+        moduleSpecifier: "@tanstack/react-query"
     });
     sourceFile.addImportDeclaration({
-        namedImports: ['useState', 'useEffect'],
-        moduleSpecifier: 'react',
-    });
-    sourceFile.addImportDeclaration({
-        defaultImport: 'axios',
-        moduleSpecifier: 'axios',
+        defaultImport: "axios",
+        moduleSpecifier: "axios"
     });
 };
 
@@ -50,7 +42,11 @@ const addTypeDefinitions = (
     typedResponse: string,
     typedRequest: string
 ): void => {
-    sourceFile.addStatements([typedRequest, '', typedResponse, '']);
+    // Also always emit HTTP_METHOD type above interfaces
+    sourceFile.addStatements([
+        `type HTTP_METHOD = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD";\n`
+    ]);
+    sourceFile.addStatements([typedRequest, "", typedResponse, ""]);
 };
 
 /**
@@ -58,14 +54,15 @@ const addTypeDefinitions = (
  * with axios and working request instance.
  *
  * @param sourceFile SourceFile object from ts-morph, in the current project.
+ * @param responseTypeName Name of the generated API response type
  */
-const addApiCall = (sourceFile: SourceFile): void => {
+const addApiCall = (sourceFile: SourceFile, responseTypeName: string): void => {
     sourceFile.addFunction({
-        name: 'fetchData',
+        name: "fetchData",
         isAsync: true,
-        parameters: [{name: 'params', type: 'apiParameters'}],
-        returnType: 'Promise<ApiResponse>',
-        statements: (writer) => {
+        parameters: [{ name: "params", type: "apiParameters" }],
+        returnType: `Promise<${responseTypeName}>`,
+        statements: writer => {
             writer.writeLine(`const response = await axios({`);
             writer.writeLine(`  url: params.targetUrl,`);
             writer.writeLine(`  method: params.httpMethod,`);
@@ -73,8 +70,8 @@ const addApiCall = (sourceFile: SourceFile): void => {
             writer.writeLine(`  params: params.queryParams,`);
             writer.writeLine(`  data: params.requestBody,`);
             writer.writeLine(`});`);
-            writer.writeLine(`return response.responseBody;`);
-        },
+            writer.writeLine(`return response.data;`);
+        }
     });
 };
 
@@ -84,7 +81,6 @@ const addApiCall = (sourceFile: SourceFile): void => {
  * @param sourceFile SourceFile object from ts-morph, in the current project.
  * @param componentName component name passed in via configuration args, defaulting to GeneratedApiComponent
  * @param serializedRequest stringified instance of working API request object
- * @returns JSX.Element
  */
 const addReactComponent = (
     sourceFile: SourceFile,
@@ -94,21 +90,26 @@ const addReactComponent = (
     sourceFile.addFunction({
         name: componentName,
         isExported: true,
-        returnType: 'JSX.Element',
+        returnType: "JSX.Element",
         statements: (writer: CodeBlockWriter) => {
             writer.writeLine(
                 `const apiRequest: apiParameters = ${serializedRequest};`
             );
             writer.blankLine();
-            writer.writeLine(`const { data, isLoading, isError } = useQuery({`);
+            writer.writeLine(
+                `const { data, isLoading, isError } = useQuery({`
+            );
             writer.writeLine(`  queryKey: ['fetchedApi'],`);
             writer.writeLine(`  queryFn: () => fetchData(apiRequest),`);
             writer.writeLine(`});`);
             writer.blankLine();
-            writer.writeLine(`if (isLoading) return <div>Loading...</div>;`);
+            writer.writeLine(
+                `if (isLoading) return <div>Loading...</div>;`
+            );
             writer.writeLine(
                 `if (isError) return <div>Error fetching data</div>;`
             );
+            writer.writeLine(`if (!data) return null;`);
             writer.blankLine();
             writer
                 .writeLine(`return (`)
@@ -118,18 +119,19 @@ const addReactComponent = (
                     );
                 })
                 .writeLine(`);`);
-        },
+        }
     });
 };
 
 /**
  * Generates a React component that uses useQuery to fetch API data using a known working request,
- * and types the response using a generated TypeScript interface.
+ * and types the response using a generated TypeScript type alias.
  *
- * @param typedResponse - The interface string for the API response.
+ * @param typedResponse - The type string for the API response.
  * @param typedRequest - The interface string for the API request (apiParameters).
  * @param requestUsed - The actual, working apiParameters object used for the request.
- * @param outputDir - The directory to output the generated functional component, defaulting to the current working directory.
+ * @param componentName - The React component name.
+ * @param outputDir - The directory to output the generated component.
  * @returns A promise that resolves with the file creation result.
  * @throws ClientCodeGenerationError when errors occur while writing.
  */
@@ -137,27 +139,54 @@ const generateClientCode = async (
     typedResponse: string,
     typedRequest: string,
     requestUsed: object,
-    componentName: string = 'GeneratedApiComponent',
+    componentName: string = "GeneratedApiComponent",
     outputDir: string = process.cwd()
 ): Promise<FileCreationResult> => {
     try {
+        if (
+            typeof componentName !== "string" ||
+            !componentName.match(/^[A-Za-z_][A-Za-z0-9_]*$/)
+        ) {
+            throw new Error(
+                "Invalid componentName: must be a valid TypeScript identifier string."
+            );
+        }
+
         const fileName = `${componentName}.tsx`;
         const filePath = path.join(outputDir, fileName);
         const project = new Project();
-        const sourceFile = project.createSourceFile(filePath, '', {
-            overwrite: true,
+        const sourceFile = project.createSourceFile(filePath, "", {
+            overwrite: true
         });
+
+        // Add imports
         addImportStatements(sourceFile);
+
+        // Add type/interface definitions, always emitting HTTP_METHOD and apiParameters
         addTypeDefinitions(sourceFile, typedResponse, typedRequest);
-        addApiCall(sourceFile);
+
+        // Parse the type name (extract 'type Name =' from typedResponse)
+        const responseTypeMatch = /^type\s+([A-Za-z0-9_]+)\s*=/.exec(
+            typedResponse.trim()
+        );
+        const responseTypeName =
+            responseTypeMatch && responseTypeMatch[1]
+                ? responseTypeMatch[1]
+                : "GeneratedApiComponentResponse";
+
+        // Add the fetchData function
+        addApiCall(sourceFile, responseTypeName);
+
+        // Add the component itself
         const serializedRequest = JSON.stringify(requestUsed, null, 2);
         addReactComponent(sourceFile, componentName, serializedRequest);
+
         await project.save();
 
         return {
             success: true,
             filePath,
-            componentName,
+            componentName
         };
     } catch (error) {
         if (error instanceof Error) {
@@ -166,7 +195,7 @@ const generateClientCode = async (
                 error.message
             );
         } else {
-            console.error('Unknown error during code generation:', error);
+            console.error("Unknown error during code generation:", error);
             throw error;
         }
     }
@@ -178,5 +207,5 @@ export {
     addImportStatements,
     addTypeDefinitions,
     addApiCall,
-    addReactComponent,
+    addReactComponent
 };

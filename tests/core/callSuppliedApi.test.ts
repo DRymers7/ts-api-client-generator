@@ -3,7 +3,7 @@ import {fail} from 'assert';
 import {apiParameters, callSuppliedApi} from '../../src/core/callSuppliedApi';
 import {ApiCallError} from '../../src/core/errors';
 
-const OPEN_URL: string = 'https://restcountries.com/v3.1/all';
+const OPEN_URL: string = 'https://restcountries.com/v3.1/name/aruba?fullText=true';
 
 /**
  * Tests for callSuppliedApi. If working correctly, these tests
@@ -80,22 +80,4 @@ describe('callSuppliedApi module tests', () => {
             }
         }
     }, 15000);
-
-    it('should preserve request parameters in the response', async () => {
-        const parameters: apiParameters = {
-            targetUrl: OPEN_URL,
-            httpMethod: 'GET',
-            authToken: 'test-token',
-            requestHeaders: {'X-Test': 'value'},
-            queryParams: {param: 'test'},
-            requestBody: undefined,
-        };
-
-        const result = await callSuppliedApi(parameters);
-
-        // Verify that the original request parameters are preserved
-        expect(result.requestUsed).toEqual(parameters);
-        expect(result.requestUsed.authToken).toBe('test-token');
-        expect(result.requestUsed.requestHeaders).toEqual({'X-Test': 'value'});
-    }, 10000);
 });

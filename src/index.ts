@@ -9,7 +9,7 @@ import parseProvidedFile from './core/parseProvidedFile';
 /**
  * Core functional exports
  */
-export {callSuppliedApi,} from './core/callSuppliedApi';
+export {callSuppliedApi} from './core/callSuppliedApi';
 export {generateClientCode} from './core/generateClientCode';
 export {generateResponseType} from './core/mapResponseToType';
 export {parseProvidedFile};

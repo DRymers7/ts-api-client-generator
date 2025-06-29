@@ -1,137 +1,98 @@
-import {describe, it, expect} from 'vitest';
-import {
-    InterfaceMap,
-    generateResponseType,
-    inferType,
-    generateTypeFromObject,
-    validateResponseBody,
-    convertToPascalCase,
-    isOptional,
-} from '../../src/core/mapResponseToType';
-import {apiResponse} from '../../src/core/callSuppliedApi';
+import { describe, it, expect } from "vitest";
+import { generateResponseType } from "../../src";
+import type { apiResponse } from "../../src/core/callSuppliedApi";
+import {clear} from "console";
 
-/**
- * Test suite for mapResponseToType module
- * If working correctly, this module should be able to take in
- * an apiResponse and generate a correct type from response.responseBody
- */
-describe('mapResponseToType module tests', () => {
-    describe('convertToPascalCase function', () => {
-        it('should convert strings to PascalCase', () => {
-            expect(convertToPascalCase('api_response')).toBe('ApiResponse');
-            expect(convertToPascalCase('foo bar')).toBe('FooBar');
-            expect(convertToPascalCase('test-case')).toBe('TestCase');
-        });
+describe("generateResponseType", () => {
+    it("generates a type alias for an array of objects", () => {
+        const resp: apiResponse = {
+            responseStatus: "OK",
+            responseCode: 200,
+            responseBody: [
+                { foo: 1, bar: "baz" },
+                { foo: 2, bar: "buz" }
+            ]
+        };
+        const out = generateResponseType(resp, "Countries");
+        expect(out).toContain("type Countries = {");
+        expect(out).toContain("foo: number;");
+        expect(out).toContain("bar: string;");
+        expect(out).toContain("}[];");
     });
 
-    describe('isOptional function', () => {
-        it('should return true for undefined and null', () => {
-            expect(isOptional(undefined)).toBe(true);
-            expect(isOptional(null)).toBe(true);
-        });
-
-        it('should return false for other values', () => {
-            expect(isOptional(0)).toBe(false);
-            expect(isOptional('')).toBe(false);
-            expect(isOptional(false)).toBe(false);
-        });
+    it("generates a type alias for an object", () => {
+        const resp: apiResponse = {
+            responseStatus: "OK",
+            responseCode: 200,
+            responseBody: { hello: "world", num: 42, nest: { q: true } }
+        };
+        const out = generateResponseType(resp, "Root");
+        expect(out).toContain("type Root = {");
+        expect(out).toContain("hello: string;");
+        expect(out).toContain("num: number;");
+        expect(out).toContain("};");
     });
 
-    describe('validateResponseBody function', () => {
-        it('should pass with valid object', () => {
-            const obj = {a: 1};
-            expect(validateResponseBody(obj)).toBe(obj);
-        });
+    it("handles a primitive value field by inferring field type", () => {
+        const num: apiResponse = {
+            responseStatus: "OK",
+            responseCode: 200,
+            responseBody: { test: 42 }
+        };
+        const outNum = generateResponseType(num, "Num");
+        expect(outNum).toContain("type Num = {");
+        expect(outNum).toContain("test: number;");
+        expect(outNum).toContain("};");
 
-        it('should throw error on null, array, or non-object', () => {
-            expect(() => validateResponseBody([])).toThrow();
-        });
+        const str: apiResponse = {
+            responseStatus: "OK",
+            responseCode: 200,
+            responseBody: { test: "x" }
+        };
+        const outStr = generateResponseType(str, "Str");
+        expect(outStr).toContain("type Str = {");
+        expect(outStr).toContain("test: string;");
+        expect(outStr).toContain("};");
+
+        const bool: apiResponse = {
+            responseStatus: "OK",
+            responseCode: 200,
+            responseBody: { test: true }
+        };
+        const outBool = generateResponseType(bool, "Boo");
+        expect(outBool).toContain("type Boo = {");
+        expect(outBool).toContain("test: boolean;");
+        expect(outBool).toContain("};");
     });
 
-    describe('inferType function', () => {
-        it('should infer primitive types correctly', () => {
-            const map: InterfaceMap = {};
-            expect(inferType('foo', 'bar', map, 'Parent')).toBe('string');
-            expect(inferType('flag', true, map, 'Parent')).toBe('boolean');
-            expect(inferType('num', 42, map, 'Parent')).toBe('number');
-            expect(inferType('empty', null, map, 'Parent')).toBe('null');
-        });
-
-        it('should handle arrays and nested objects', () => {
-            const map: InterfaceMap = {};
-            expect(inferType('arr', [1, 2], map, 'Parent')).toBe('number[]');
-            expect(inferType('obj', {a: 1}, map, 'Parent')).toBe('ParentObj');
-            expect(map.ParentObj).toContain('interface ParentObj');
-        });
-
-        it('should default empty arrays to any[]', () => {
-            const map: InterfaceMap = {};
-            expect(inferType('emptyArr', [], map, 'Parent')).toBe('any[]');
-        });
+    it("handles null root by throwing", () => {
+        const resp: apiResponse = {
+            responseStatus: "OK",
+            responseCode: 200,
+            responseBody: undefined
+        };
+        expect(() => generateResponseType(resp, "Nil")).toThrow();
     });
 
-    describe('generateTypeFromObject function', () => {
-        it('should generate a single interface correctly', () => {
-            const map: InterfaceMap = {};
-            generateTypeFromObject({id: 1, name: 'John'}, 'User', map);
-            expect(map.User).toMatchInlineSnapshot(`
-"interface User {
-  id: number;
-  name: string;
-}"
-`);
-        });
-
-        it('should generate nested interfaces', () => {
-            const map: InterfaceMap = {};
-            generateTypeFromObject(
-                {
-                    id: 1,
-                    profile: {
-                        age: 30,
-                        email: 'a@example.com',
-                    },
-                },
-                'Account',
-                map
-            );
-
-            expect(Object.keys(map)).toEqual(['AccountProfile', 'Account']);
-            expect(map.Account).toContain('profile: AccountProfile');
-        });
+    it("handles empty array root", () => {
+        const resp: apiResponse = {
+            responseStatus: "OK",
+            responseCode: 200,
+            responseBody: []
+        };
+        const out = generateResponseType(resp, "E");
+        expect(out).toContain("type E = any[];");
     });
 
-    describe('generateResponseType function', () => {
-        it('should generate full interface tree from apiResponse', () => {
-            const mockResponse: apiResponse = {
-                responseStatus: 'OK',
-                responseCode: 200,
-                responseBody: {
-                    userId: 123,
-                    name: 'Alice',
-                    settings: {
-                        darkMode: true,
-                        layout: 'grid',
-                    },
-                    tags: ['admin', 'user'],
-                },
-            };
-
-            const result = generateResponseType(mockResponse, 'UserResponse');
-            expect(result).toContain('interface UserResponse');
-            expect(result).toContain('interface UserResponseSettings');
-            expect(result).toContain('settings: UserResponseSettings;');
-            expect(result).toContain('tags: string[];');
-        });
-
-        it('should throw for invalid response body', () => {
-            const badResponse: apiResponse = {
-                responseStatus: 'OK',
-                responseCode: 200,
-                responseBody: undefined,
-            };
-
-            expect(() => generateResponseType(badResponse, 'Bad')).toThrow();
-        });
+    it("handles nested arrays", () => {
+        const resp: apiResponse = {
+            responseStatus: "OK",
+            responseCode: 200,
+            responseBody: [[{ foo: 1 }]]
+        };
+        const out = generateResponseType(resp, "Deep");
+        expect(out).toContain("type Deep = {");
+        expect(out).toContain("foo: number;");
+        expect(out).toContain("}[][];");
     });
 });
