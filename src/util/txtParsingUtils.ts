@@ -61,19 +61,22 @@ function extractMethod(tokens: string[]): apiParameters['httpMethod'] {
  * @returns record of <string, string> for each header in request
  */
 function extractHeaders(tokens: string[]): Record<string, string> {
-    return tokens.reduce((headers, token, i) => {
-        if (token === '-H' || token === '--header') {
-            const header = tokens[i + 1];
-            if (header) {
-                const [key, ...rest] = header.split(':');
-                if (key && rest.length) {
-                    // eslint-disable-next-line no-param-reassign
-                    headers[key.trim()] = rest.join(':').trim();
+    return tokens.reduce(
+        (headers, token, i) => {
+            if (token === '-H' || token === '--header') {
+                const header = tokens[i + 1];
+                if (header) {
+                    const [key, ...rest] = header.split(':');
+                    if (key && rest.length) {
+                        // eslint-disable-next-line no-param-reassign
+                        headers[key.trim()] = rest.join(':').trim();
+                    }
                 }
             }
-        }
-        return headers;
-    }, {} as Record<string, string>);
+            return headers;
+        },
+        {} as Record<string, string>
+    );
 }
 
 /**
@@ -108,10 +111,13 @@ function extractBody(tokens: string[]): object | undefined {
  * @returns target URL for rest request
  */
 function extractUrl(tokens: string[]): string {
-    const urlIndex = tokens.findIndex((token, i) =>
-        token.startsWith('http') &&
-        !token.startsWith('-') &&
-        !['-X', '--request', '-H', '--header', '-d', '--data'].includes(tokens[i - 1])
+    const urlIndex = tokens.findIndex(
+        (token, i) =>
+            token.startsWith('http') &&
+            !token.startsWith('-') &&
+            !['-X', '--request', '-H', '--header', '-d', '--data'].includes(
+                tokens[i - 1]
+            )
     );
 
     if (urlIndex !== -1) {

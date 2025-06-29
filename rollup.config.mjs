@@ -26,7 +26,7 @@ const EXTERNAL_RUNTIME = [
     'path',
     'fs',
     'fs/promises',
-    'commander'
+    'commander',
 ];
 
 /**
@@ -44,13 +44,13 @@ export default defineConfig([
             {
                 file: 'dist/index.js',
                 format: 'cjs',
-                sourcemap: true
+                sourcemap: true,
             },
             {
                 file: 'dist/index.esm.js',
                 format: 'es',
-                sourcemap: true
-            }
+                sourcemap: true,
+            },
         ],
         external: EXTERNAL_RUNTIME,
         plugins: [
@@ -59,9 +59,9 @@ export default defineConfig([
             typescript({
                 tsconfig: './tsconfig.json',
                 outputToFilesystem: true,
-                declaration: false
-            })
-        ]
+                declaration: false,
+            }),
+        ],
     },
 
     // -----------------------
@@ -73,21 +73,18 @@ export default defineConfig([
             file: 'dist/bin/cli.js',
             format: 'cjs',
             banner: '#!/usr/bin/env node',
-            sourcemap: true
+            sourcemap: true,
         },
-        external: [
-            ...EXTERNAL_RUNTIME,
-            'ts-api-client-generator'
-        ],
+        external: [...EXTERNAL_RUNTIME, 'ts-api-client-generator'],
         plugins: [
             resolve(),
             commonjs(),
             typescript({
                 tsconfig: './tsconfig.json',
                 outputToFilesystem: true,
-                declaration: false
-            })
-        ]
+                declaration: false,
+            }),
+        ],
     },
 
     // -----------------------
@@ -97,9 +94,9 @@ export default defineConfig([
         input: 'src/index.ts',
         output: {
             file: 'dist/index.d.ts',
-            format: 'es'
+            format: 'es',
         },
         external: EXTERNAL_RUNTIME,
-        plugins: [dts()]
-    }
+        plugins: [dts()],
+    },
 ]);

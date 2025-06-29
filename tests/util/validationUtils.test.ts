@@ -37,14 +37,18 @@ describe('Validation Utilities', () => {
         it('returns invalid result if file path is missing', () => {
             const result = validateFileExists(undefined);
             expect(result.isValid).toBe(false);
-            expect(result.errorMessage).toMatch(/Input file path does not exist/);
+            expect(result.errorMessage).toMatch(
+                /Input file path does not exist/
+            );
         });
 
         it('returns invalid result if file does not exist', () => {
             existsSyncSpy.mockReturnValue(false);
             const result = validateFileExists('missing.txt');
             expect(result.isValid).toBe(false);
-            expect(result.errorMessage).toMatch(/Input file path does not exist/);
+            expect(result.errorMessage).toMatch(
+                /Input file path does not exist/
+            );
         });
     });
 
@@ -58,7 +62,9 @@ describe('Validation Utilities', () => {
         it('returns invalid result if file path is missing', () => {
             const result = validateFileCanBeRead(undefined);
             expect(result.isValid).toBe(false);
-            expect(result.errorMessage).toMatch(/Input file path does not exist/);
+            expect(result.errorMessage).toMatch(
+                /Input file path does not exist/
+            );
         });
 
         it('returns invalid result if file cannot be read', () => {
@@ -80,13 +86,17 @@ describe('Validation Utilities', () => {
         it('returns invalid result for empty component name', () => {
             const result = validateComponentName('');
             expect(result.isValid).toBe(false);
-            expect(result.errorMessage).toMatch("Component name is required and must be a string");
+            expect(result.errorMessage).toMatch(
+                'Component name is required and must be a string'
+            );
         });
 
         it('returns invalid result for lowercase name', () => {
             const result = validateComponentName('userComponent');
             expect(result.isValid).toBe(false);
-            expect(result.errorMessage).toMatch(/must start with an uppercase letter/);
+            expect(result.errorMessage).toMatch(
+                /must start with an uppercase letter/
+            );
         });
 
         it('returns invalid result for name with invalid characters', () => {
@@ -112,7 +122,9 @@ describe('Validation Utilities', () => {
         it('returns invalid result for empty path', () => {
             const result = validateOutputPath('');
             expect(result.isValid).toBe(false);
-            expect(result.errorMessage).toMatch("Output path is required and must be a string");
+            expect(result.errorMessage).toMatch(
+                'Output path is required and must be a string'
+            );
         });
 
         it('returns invalid result for path with invalid characters', () => {
@@ -126,7 +138,11 @@ describe('Validation Utilities', () => {
         it('throws ValidationError if any validation fails', () => {
             existsSyncSpy.mockReturnValue(false);
             expect(() => {
-                validateProgramArguments('missing.txt', './output', 'MyComponent');
+                validateProgramArguments(
+                    'missing.txt',
+                    './output',
+                    'MyComponent'
+                );
             }).toThrow(ValidationError);
         });
 
@@ -134,7 +150,11 @@ describe('Validation Utilities', () => {
             existsSyncSpy.mockReturnValue(true);
             accessSyncSpy.mockImplementation(() => {});
             expect(() => {
-                validateProgramArguments('valid.txt', './output', 'MyComponent');
+                validateProgramArguments(
+                    'valid.txt',
+                    './output',
+                    'MyComponent'
+                );
             }).not.toThrow();
         });
     });

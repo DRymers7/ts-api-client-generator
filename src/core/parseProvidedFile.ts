@@ -128,17 +128,17 @@ const parseProvidedFile = async (filePath: string): Promise<apiParameters> => {
         const content = await fs.readFile(filePath, 'utf-8');
         const extension = path.extname(filePath).toLowerCase();
         switch (extension) {
-        case HTTP_EXTENSION:
-            return parseHttpFile(content);
-        case TXT_EXTENSION:
-            return parseTxtFile(content);
-        case JSON_EXTENSION:
-            return parseJsonFile(content);
-        default:
-            throw new FileParseError(
-                filePath,
-                `Unsupported file type: ${extension}`
-            );
+            case HTTP_EXTENSION:
+                return parseHttpFile(content);
+            case TXT_EXTENSION:
+                return parseTxtFile(content);
+            case JSON_EXTENSION:
+                return parseJsonFile(content);
+            default:
+                throw new FileParseError(
+                    filePath,
+                    `Unsupported file type: ${extension}`
+                );
         }
     } catch (error: unknown) {
         // Propagate error if it is already this type.
