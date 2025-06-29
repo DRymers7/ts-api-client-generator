@@ -26,12 +26,11 @@ const createValidResult = (): ValidationResult => ({isValid: true});
 const createInvalidResult = (
     errorMessage: string,
     suggestions: string[] = []
-): ValidationResult => 
-    ({
-        isValid: false,
-        errorMessage,
-        suggestions,
-    });
+): ValidationResult => ({
+    isValid: false,
+    errorMessage,
+    suggestions,
+});
 
 /**
  * Validates a file exists on the path.
@@ -42,21 +41,15 @@ const createInvalidResult = (
  */
 const validateFileExists = (filePath: string | undefined): ValidationResult => {
     if (!filePath || filePath === '') {
-        return createInvalidResult(
-            'Input file path does not exist.',
-            [
-                'Please ensure that the file path to the test is correct, and exists.'
-            ]
-        );
+        return createInvalidResult('Input file path does not exist.', [
+            'Please ensure that the file path to the test is correct, and exists.',
+        ]);
     }
 
     if (!fs.existsSync(filePath)) {
-        return createInvalidResult(
-            'Input file path does not exist.',
-            [
-                'Please ensure that the file path to the test is correct, and exists.'
-            ]
-        );
+        return createInvalidResult('Input file path does not exist.', [
+            'Please ensure that the file path to the test is correct, and exists.',
+        ]);
     }
 
     return createValidResult();
@@ -69,25 +62,21 @@ const validateFileExists = (filePath: string | undefined): ValidationResult => {
  * @returns Validation result depending on whether or not the file
  * can be read.
  */
-const validateFileCanBeRead = (filePath: string | undefined): ValidationResult => {
+const validateFileCanBeRead = (
+    filePath: string | undefined
+): ValidationResult => {
     if (!filePath || filePath.trim() === '') {
-        return createInvalidResult(
-            'Input file path does not exist.',
-            [
-                'Please ensure that the file path to the test is correct, and exists.'
-            ]
-        );
+        return createInvalidResult('Input file path does not exist.', [
+            'Please ensure that the file path to the test is correct, and exists.',
+        ]);
     }
 
     try {
         fs.accessSync(filePath, constants.R_OK);
     } catch (error: unknown) {
-        return createInvalidResult(
-            'Input file cannot be read.',
-            [
-                'Please ensure that the provided file has the correct permissions.'
-            ]
-        );
+        return createInvalidResult('Input file cannot be read.', [
+            'Please ensure that the provided file has the correct permissions.',
+        ]);
     }
 
     return createValidResult();
@@ -101,7 +90,9 @@ const validateFileCanBeRead = (filePath: string | undefined): ValidationResult =
  * - Contain only letters, numbers, underscores, and dollar signs
  * - Not be empty or just whitespace
  */
-const validateComponentName = (componentName: string | undefined): ValidationResult => {
+const validateComponentName = (
+    componentName: string | undefined
+): ValidationResult => {
     // Check for null, undefined, or empty string
     if (!componentName || typeof componentName !== 'string') {
         return createInvalidResult(
@@ -163,7 +154,9 @@ const validateComponentName = (componentName: string | undefined): ValidationRes
  * Note: This only validates the format of the path, not whether it exists
  * or is writable. File system operations should be handled separately.
  */
-const validateOutputPath = (outputPath: string | undefined): ValidationResult => {
+const validateOutputPath = (
+    outputPath: string | undefined
+): ValidationResult => {
     if (!outputPath || typeof outputPath !== 'string') {
         return createInvalidResult(
             'Output path is required and must be a string',

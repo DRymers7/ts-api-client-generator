@@ -1,6 +1,6 @@
-import { CodeBlockWriter, Project, SourceFile } from "ts-morph";
-import path from "path";
-import { ClientCodeGenerationError } from "./errors";
+import {CodeBlockWriter, Project, SourceFile} from 'ts-morph';
+import path from 'path';
+import {ClientCodeGenerationError} from './errors';
 
 /**
  * Result of successful file creation operation
@@ -20,12 +20,12 @@ interface FileCreationResult {
  */
 const addImportStatements = (sourceFile: SourceFile): void => {
     sourceFile.addImportDeclaration({
-        namedImports: ["useQuery"],
-        moduleSpecifier: "@tanstack/react-query"
+        namedImports: ['useQuery'],
+        moduleSpecifier: '@tanstack/react-query',
     });
     sourceFile.addImportDeclaration({
-        defaultImport: "axios",
-        moduleSpecifier: "axios"
+        defaultImport: 'axios',
+        moduleSpecifier: 'axios',
     });
 };
 
@@ -44,9 +44,9 @@ const addTypeDefinitions = (
 ): void => {
     // Also always emit HTTP_METHOD type above interfaces
     sourceFile.addStatements([
-        `type HTTP_METHOD = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD";\n`
+        `type HTTP_METHOD = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD";\n`,
     ]);
-    sourceFile.addStatements([typedRequest, "", typedResponse, ""]);
+    sourceFile.addStatements([typedRequest, '', typedResponse, '']);
 };
 
 /**
@@ -58,11 +58,11 @@ const addTypeDefinitions = (
  */
 const addApiCall = (sourceFile: SourceFile, responseTypeName: string): void => {
     sourceFile.addFunction({
-        name: "fetchData",
+        name: 'fetchData',
         isAsync: true,
-        parameters: [{ name: "params", type: "apiParameters" }],
+        parameters: [{name: 'params', type: 'apiParameters'}],
         returnType: `Promise<${responseTypeName}>`,
-        statements: writer => {
+        statements: (writer) => {
             writer.writeLine(`const response = await axios({`);
             writer.writeLine(`  url: params.targetUrl,`);
             writer.writeLine(`  method: params.httpMethod,`);
@@ -71,7 +71,7 @@ const addApiCall = (sourceFile: SourceFile, responseTypeName: string): void => {
             writer.writeLine(`  data: params.requestBody,`);
             writer.writeLine(`});`);
             writer.writeLine(`return response.data;`);
-        }
+        },
     });
 };
 
@@ -90,22 +90,18 @@ const addReactComponent = (
     sourceFile.addFunction({
         name: componentName,
         isExported: true,
-        returnType: "JSX.Element",
+        returnType: 'JSX.Element',
         statements: (writer: CodeBlockWriter) => {
             writer.writeLine(
                 `const apiRequest: apiParameters = ${serializedRequest};`
             );
             writer.blankLine();
-            writer.writeLine(
-                `const { data, isLoading, isError } = useQuery({`
-            );
+            writer.writeLine(`const { data, isLoading, isError } = useQuery({`);
             writer.writeLine(`  queryKey: ['fetchedApi'],`);
             writer.writeLine(`  queryFn: () => fetchData(apiRequest),`);
             writer.writeLine(`});`);
             writer.blankLine();
-            writer.writeLine(
-                `if (isLoading) return <div>Loading...</div>;`
-            );
+            writer.writeLine(`if (isLoading) return <div>Loading...</div>;`);
             writer.writeLine(
                 `if (isError) return <div>Error fetching data</div>;`
             );
@@ -119,7 +115,7 @@ const addReactComponent = (
                     );
                 })
                 .writeLine(`);`);
-        }
+        },
     });
 };
 
@@ -139,24 +135,24 @@ const generateClientCode = async (
     typedResponse: string,
     typedRequest: string,
     requestUsed: object,
-    componentName: string = "GeneratedApiComponent",
+    componentName: string = 'GeneratedApiComponent',
     outputDir: string = process.cwd()
 ): Promise<FileCreationResult> => {
     try {
         if (
-            typeof componentName !== "string" ||
+            typeof componentName !== 'string' ||
             !componentName.match(/^[A-Za-z_][A-Za-z0-9_]*$/)
         ) {
             throw new Error(
-                "Invalid componentName: must be a valid TypeScript identifier string."
+                'Invalid componentName: must be a valid TypeScript identifier string.'
             );
         }
 
         const fileName = `${componentName}.tsx`;
         const filePath = path.join(outputDir, fileName);
         const project = new Project();
-        const sourceFile = project.createSourceFile(filePath, "", {
-            overwrite: true
+        const sourceFile = project.createSourceFile(filePath, '', {
+            overwrite: true,
         });
 
         // Add imports
@@ -172,7 +168,7 @@ const generateClientCode = async (
         const responseTypeName =
             responseTypeMatch && responseTypeMatch[1]
                 ? responseTypeMatch[1]
-                : "GeneratedApiComponentResponse";
+                : 'GeneratedApiComponentResponse';
 
         // Add the fetchData function
         addApiCall(sourceFile, responseTypeName);
@@ -186,7 +182,7 @@ const generateClientCode = async (
         return {
             success: true,
             filePath,
-            componentName
+            componentName,
         };
     } catch (error) {
         if (error instanceof Error) {
@@ -195,7 +191,7 @@ const generateClientCode = async (
                 error.message
             );
         } else {
-            console.error("Unknown error during code generation:", error);
+            console.error('Unknown error during code generation:', error);
             throw error;
         }
     }
@@ -207,5 +203,5 @@ export {
     addImportStatements,
     addTypeDefinitions,
     addApiCall,
-    addReactComponent
+    addReactComponent,
 };

@@ -269,6 +269,7 @@ const {data, isLoading, isError} = useQuery({
 ## 🔥 Try It Yourself
 
 1. Clone this repository and install dependencies:
+
 ```bash
     git clone https://github.com/DRymers7/ts-api-client-generator.git
     cd ts-api-client-generator

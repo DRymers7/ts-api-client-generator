@@ -3,7 +3,8 @@ import {fail} from 'assert';
 import {apiParameters, callSuppliedApi} from '../../src/core/callSuppliedApi';
 import {ApiCallError} from '../../src/core/errors';
 
-const OPEN_URL: string = 'https://restcountries.com/v3.1/name/aruba?fullText=true';
+const OPEN_URL: string =
+    'https://restcountries.com/v3.1/name/aruba?fullText=true';
 
 /**
  * Tests for callSuppliedApi. If working correctly, these tests

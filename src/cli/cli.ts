@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { Command } from 'commander';
+import {Command} from 'commander';
 import path from 'path';
 import {
     parseProvidedFile,
@@ -46,15 +46,19 @@ const resolvedOutputDir = path.isAbsolute(options.output)
     ? options.output
     : path.resolve(process.cwd(), options.output);
 
-console.log("Resolved file path: ", resolvedFilePath);
-console.log("Resolved output directory: ", resolvedOutputDir);
+console.log('Resolved file path: ', resolvedFilePath);
+console.log('Resolved output directory: ', resolvedOutputDir);
 
 /**
  * Entrypoint of the application.
  */
 const main = async () => {
     try {
-        validateProgramArguments(resolvedFilePath, resolvedOutputDir, options.name);
+        validateProgramArguments(
+            resolvedFilePath,
+            resolvedOutputDir,
+            options.name
+        );
 
         const requestContent = await parseProvidedFile(resolvedFilePath);
         const rawApiResponse = await callSuppliedApi(requestContent);
@@ -99,11 +103,11 @@ const main = async () => {
                         const base = [`- ${result.errorMessage}`];
                         const suggestions = result.suggestions?.length
                             ? [
-                                '  Suggestions:',
-                                ...result.suggestions.map(
-                                    (s) => `    • ${s}`
-                                ),
-                            ]
+                                  '  Suggestions:',
+                                  ...result.suggestions.map(
+                                      (s) => `    • ${s}`
+                                  ),
+                              ]
                             : [];
                         return [...base, ...suggestions];
                     }),

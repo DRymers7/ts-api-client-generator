@@ -29,4 +29,4 @@ export interface PostmanRequest {
     body?: {raw?: string};
 }
 
-export type ShellToken = string | { op: string };
+export type ShellToken = string | {op: string};

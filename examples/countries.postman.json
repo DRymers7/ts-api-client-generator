@@ -1,12 +1,12 @@
 {
-  "method": "GET",
-  "header": [
-    {
-      "key": "Accept",
-      "value": "application/json"
+    "method": "GET",
+    "header": [
+        {
+            "key": "Accept",
+            "value": "application/json"
+        }
+    ],
+    "url": {
+        "raw": "https://restcountries.com/v3.1/name/germany"
     }
-  ],
-  "url": {
-    "raw": "https://restcountries.com/v3.1/name/germany"
-  }
 }
